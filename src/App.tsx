@@ -14,6 +14,7 @@ import { CRMPage } from './pages/modules/CRMPage';
 import { HRMPage, type Employee } from './pages/modules/HRMPage';
 import { PlanningPage, type CalendarEvent } from './pages/modules/PlanningPage';
 import { ReportsPage } from './pages/modules/ReportsPage';
+import { WebshopPage, type WebshopProduct, type WebshopCategory, type WebshopOrder } from './pages/modules/WebshopPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -78,6 +79,11 @@ const App: React.FC = () => {
 
   // Planning - Calendar Events
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+
+  // Webshop - Products, Categories, Orders
+  const [webshopProducts, setWebshopProducts] = useState<WebshopProduct[]>([]);
+  const [webshopCategories, setWebshopCategories] = useState<WebshopCategory[]>([]);
+  const [webshopOrders, setWebshopOrders] = useState<WebshopOrder[]>([]);
 
   // Inventory
   const [inventory, setInventory] = useState<InventoryItem[]>(initialInventory);
@@ -314,8 +320,21 @@ const App: React.FC = () => {
             />
           )}
 
+          {currentModule === 'webshop' && (
+            <WebshopPage
+              currentUser={currentUser}
+              products={webshopProducts}
+              setProducts={setWebshopProducts}
+              categories={webshopCategories}
+              setCategories={setWebshopCategories}
+              orders={webshopOrders}
+              setOrders={setWebshopOrders}
+              inventory={inventory}
+            />
+          )}
+
           {/* Placeholder voor andere modules */}
-          {!['dashboard', 'inventory', 'workorders', 'accounting', 'pos', 'crm', 'hrm', 'planning', 'reports'].includes(
+          {!['dashboard', 'inventory', 'workorders', 'accounting', 'pos', 'crm', 'hrm', 'planning', 'reports', 'webshop'].includes(
             currentModule
           ) && (
             <div className="p-6 max-w-7xl mx-auto">
