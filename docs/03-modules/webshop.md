@@ -475,6 +475,148 @@ Snelle acties vanuit order lijst:
 
 ---
 
+## 🐛 Troubleshooting
+
+### Probleem: Producten niet zichtbaar
+
+**Symptomen:**
+- Producten verschijnen niet in webshop
+- Product count zegt > 0 maar niets zichtbaar
+- Status is "Active" maar niet online
+
+**Oorzaak:**
+- Product status is "Draft" in plaats van "Active"
+- Product zichtbaarheid is "Hidden"
+- Frontend synchronisatie probleem
+- Categorie is inactive
+
+**Oplossing:**
+1. Check product status - moet "Active" zijn
+2. Check zichtbaarheid - moet "Public" zijn
+3. Klik "Publiceer" om te activeren
+4. Check categorie is ook actief
+5. Clear frontend cache en refresh
+
+---
+
+### Probleem: Winkelwagen leeggemaakt
+
+**Symptomen:**
+- Items verdwijnen uit winkelwagen
+- Sessie wordt gereset
+- Wagen is leeg zonder actie
+
+**Oorzaak:**
+- Browser sessie verlopen
+- LocalStorage is gewist
+- Logout gebeurde
+- Timeout door inactiviteit
+- Browser crash/refresh
+
+**Oplossing:**
+1. Clear browser cache (Ctrl+Shift+Delete)
+2. Check browser cookie settings
+3. Voeg items opnieuw toe
+4. Blijf ingelogd (session timeout verhogen)
+5. Use niet-private browsing mode
+
+---
+
+### Probleem: Betaling faalt
+
+**Symptomen:**
+- Payment button werkt niet
+- Transactie wordt niet verwerkt
+- Error "Payment processing failed"
+- Klant wordt niet doorgeleid naar betaling
+
+**Oorzaak:**
+- Payment gateway niet geconfigureerd
+- Bestelling heeft geen items
+- Klant informatie onvolledig
+- Backend service offline
+
+**Oplossing:**
+1. Check bestelling heeft items
+2. Zorg klant gegevens compleet zijn
+3. Controleer payment methode instellingen
+4. Check backend service status
+5. Try opnieuw met ander payment method
+
+---
+
+### Veelvoorkomende Errors
+
+#### Error: "Product not available"
+**Oorzaak:** Product is niet gepubliceerd
+**Oplossing:** Go to Product Beheer, check status en zichtbaarheid
+
+#### Error: "Invalid SKU"
+**Oorzaak:** SKU formaat is incorrect
+**Oplossing:** Zorg SKU uniek is en correct format
+
+#### Error: "Out of stock"
+**Oorzaak:** Product is niet op voorraad
+**Oplossing:** Update voorraad in Inventory module
+
+---
+
+### Product Beheer Issues
+
+**Symptomen:** Kan product niet aanmaken/bewerken, wijziging wordt niet opgeslagen
+**Mogelijke oorzaken:**
+- Verplichte veld niet ingevuld
+- SKU conflict
+- Geen admin rechten
+- Database fout
+**Oplossingen:**
+1. Check alle verplichte velden
+2. Verifieer SKU is uniek
+3. Check admin rechten
+4. Ververs pagina
+5. Try opnieuw
+
+---
+
+### Categorie Issues
+
+**Symptomen:** Categorieën werken niet, producten in categorie tonen niet
+**Mogelijke oorzaken:**
+- Categorie is inactive
+- Parent categorie bestaat niet
+- Hierarchie probleem
+**Oplossingen:**
+1. Check categorie is actief
+2. Verifieer parent categorie
+3. Zorg producten zijn aan categorie gekoppeld
+4. Ververs frontend
+5. Check categorie slug is correct
+
+---
+
+### Order Management Issues
+
+**Symptomen:** Bestellingen kunnen niet verwerkt worden, status update faalt
+**Mogelijke oorzaken:**
+- Order status is op eindstatus
+- Backend validatie fout
+- Geen rechten
+**Oplossingen:**
+1. Check order status
+2. Volg correct workflow
+3. Verifieer admin rechten
+4. Try status change opnieuw
+
+---
+
+### Tips voor Debugging
+
+1. **Open Browser Console** (F12) om errors te zien
+2. **Check Network Tab** voor API errors
+3. **Refresh de pagina** (F5) bij rare gedrag
+4. **Controleer product details** voor compliance
+5. **Test in Incognito Mode** om extensies uit te sluiten
+
 ## Gerelateerde Modules
 
 - [Voorraadbeheer](./inventory.md) - Voor voorraad koppeling

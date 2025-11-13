@@ -69,6 +69,128 @@ Volledig geïntegreerd kassasysteem voor directe verkopen met real-time voorraad
 - Verkoop historie per klant
 - Omzet tracking per klant
 
+## 🐛 Troubleshooting
+
+### Probleem: Betalingen niet geregistreerd
+
+**Symptomen:**
+- Transactie wordt niet opgeslagen
+- Betaling verschijnt niet in boekhouding
+- Kassablik is niet bijgewerkt
+
+**Oorzaak:**
+- Database connectie verbroken
+- Betaalmethode niet ingesteld
+- Klant niet correct geselecteerd
+- Backend service down
+
+**Oplossing:**
+1. Check database connectie in Admin Instellingen
+2. Zorg betaalmethode is ingesteld
+3. Selecteer klant correct (of "Particulier (Kassa)")
+4. Ververs pagina (F5)
+5. Controleer backend logs
+
+---
+
+### Probleem: Kassalade balans klopt niet
+
+**Symptomen:**
+- Totaal in systeem != cash in lade
+- Tellingen kloppen niet
+- Discrepantie in eindstand
+
+**Oorzaak:**
+- Transacties niet compleet verwerkt
+- Retouren niet goed geregistreerd
+- Handmatige aanpassingen
+- Duplicate transacties
+
+**Oplossing:**
+1. Voer handmatige inventarisatie uit
+2. Check Accounting module voor alle transacties
+3. Zoek naar duplicate entries
+4. Controleer retouren zijn geregistreerd
+5. Sluit dagkassa en start nieuwe dag
+
+---
+
+### Probleem: Bonnetje printen werkt niet
+
+**Symptomen:**
+- Print knop doet niets
+- Printer reageert niet
+- Bonnetje is leeg/onleesbaar
+
+**Oorzaak:**
+- Printer niet aansluitend
+- Printer driver probleem
+- Browser print settings
+- Papier is op of zit vast
+
+**Oplossing:**
+1. Check printer is aan en aansluitend
+2. Update printer drivers
+3. Check browser print dialog
+4. Verifieer papier zit goed
+5. Test met andere applicatie
+
+---
+
+### Veelvoorkomende Errors
+
+#### Error: "Payment processing failed"
+**Oorzaak:** Betaling kan niet verwerkt worden
+**Oplossing:** Check betaalmethode en try opnieuw
+
+#### Error: "Out of stock"
+**Oorzaak:** Product is niet op voorraad
+**Oplossing:** Check voorraad in Inventory module, voeg toe of selecteer ander product
+
+#### Error: "Invalid customer selection"
+**Oorzaak:** Klant is niet correct geselecteerd
+**Oplossing:** Selecteer bestaande klant of gebruik "Particulier (Kassa)"
+
+---
+
+### Winkelwagen Issues
+
+**Symptomen:** Items kunnen niet toegevoegd worden, winkelwagen wissing werkt niet
+**Mogelijke oorzaken:**
+- Voorraad check faalt
+- Database sync probleem
+- Browser cache
+**Oplossingen:**
+1. Check voorraad is beschikbaar
+2. Ververs pagina (F5)
+3. Clear browser cache (Ctrl+Shift+Delete)
+4. Controleer database connectie
+
+---
+
+### Klant Selectie Issues
+
+**Symptomen:** Klanten apareert niet in dropdown, selectie werkt niet
+**Mogelijke oorzaken:**
+- Geen klanten aangemaakt
+- Zoekterm is te specifiek
+- Filter is actief
+**Oplossingen:**
+1. Check klanten zijn aangemaakt in CRM
+2. Probeer bredere zoekterm
+3. Clear filters
+4. Use "Particulier (Kassa)" als default
+
+---
+
+### Tips voor Debugging
+
+1. **Open Browser Console** (F12) om errors te zien
+2. **Check Network Tab** voor API errors
+3. **Refresh de pagina** (F5) bij rare gedrag
+4. **Controleer voorraad** voor stock issues
+5. **Test in Incognito Mode** om extensies uit te sluiten
+
 ## Gerelateerde Modules
 
 - [Voorraadbeheer](./inventory.md) - Voor voorraad controle

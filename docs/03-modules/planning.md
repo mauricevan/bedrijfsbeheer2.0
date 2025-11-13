@@ -188,6 +188,142 @@ Volledige kalender module voor planning van werkorders, meetings, vakantie en ov
 
 ---
 
+## 🐛 Troubleshooting
+
+### Probleem: Agenda items overlappen
+
+**Symptomen:**
+- Twee events op zelfde tijd
+- Conflict waarschuwing wordt niet getoond
+- Medewerker is dubbelgeboekt
+
+**Oorzaak:**
+- Conflict detectie nog niet geïmplementeerd
+- Twee admins boeken tegelijk
+- Werkorder en vakantie conflict
+- Tijdzone probleem
+
+**Oplossing:**
+1. Check alle events voor overlap
+2. Move een event naar ander moment
+3. Verwijder duplicate event
+4. Controleer systeem tijd/tijdzone
+5. Communiceer met team bij gelijktijdig boeken
+
+---
+
+### Probleem: Herinnering notificaties werken niet
+
+**Symptomen:**
+- Geen reminder voor aankomende event
+- Notificatie wordt niet getoond
+- Badge toont geen items
+
+**Oorzaak:**
+- Notificaties module is uitgeschakeld
+- Herinnering feature nog niet volledig
+- Browser notifications disabled
+- Datum/tijd is incorrect
+
+**Oplossing:**
+1. Check Admin Instellingen → Notificaties is aan
+2. Check browser notification permissions
+3. Allow notifications in browser settings
+4. Verifieer event datum/tijd
+5. Controleer timezone instellingen
+
+---
+
+### Probleem: Export naar kalender faalt
+
+**Symptomen:**
+- iCal export werkt niet
+- Kan niet synchroniseren met Outlook/Google
+- File is leeg of corrupt
+
+**Oorzaak:**
+- Export feature nog niet geïmplementeerd
+- File format is incorrect
+- Browser blokkiert download
+- Backend service down
+
+**Oplossing:**
+1. Check of export beschikbaar is in deze versie
+2. Try in ander browser
+3. Check browser download settings
+4. Controleer backend logs
+5. Copy handmatig in plaats van export
+
+---
+
+### Veelvoorkomende Errors
+
+#### Error: "Event creation failed"
+**Oorzaak:** Event kan niet aangemaakt worden
+**Oplossing:** Check alle velden zijn ingevuld (type, titel, datum, medewerker)
+
+#### Error: "Time slot unavailable"
+**Oorzaak:** Medewerker is al geboekt
+**Oplossing:** Selecteer ander tijdslot of ander persoon
+
+#### Error: "Invalid date"
+**Oorzaak:** Datum formaat is incorrect
+**Oplossing:** Zorg voor correct datumformaat (DD-MM-YYYY)
+
+---
+
+### Navigatie Issues
+
+**Symptomen:** Kalender springt niet naar correct datum, navigation buttons werken niet
+**Mogelijke oorzaken:**
+- Systeem datum is verkeerd
+- Browser cache probleem
+- JavaScript error
+**Oplossingen:**
+1. Controleer systeem datum/tijd
+2. Clear browser cache (Ctrl+Shift+Delete)
+3. Check browser console (F12)
+4. Ververs pagina
+
+---
+
+### View Toggle Issues
+
+**Symptomen:** Dag/week/maand view switchen werkt niet
+**Mogelijke oorzaken:**
+- JavaScript error
+- State management probleem
+- Browser compatibility
+**Oplossingen:**
+1. Use ander browser
+2. Check browser console (F12)
+3. Clear browser cache
+4. Refresh pagina
+
+---
+
+### Medewerker Filter Issues
+
+**Symptomen:** Medewerker filter toont geen resultaten
+**Mogelijke oorzaken:**
+- Medewerker is niet in systeem
+- Events niet aan medewerker gekoppeld
+**Oplossingen:**
+1. Check HRM module - medewerkers bestaan
+2. Voeg medewerker toe aan events
+3. Refresh pagina
+4. Clear filters
+
+---
+
+### Tips voor Debugging
+
+1. **Open Browser Console** (F12) om errors te zien
+2. **Check Network Tab** voor API errors
+3. **Refresh de pagina** (F5) bij rare gedrag
+4. **Controleer systeem datum** voor date issues
+5. **Test in Incognito Mode** om extensies uit te sluiten
+
 ## Gerelateerde Modules
 
 - [Werkorders](./workorders.md) - Voor werkorder planning
