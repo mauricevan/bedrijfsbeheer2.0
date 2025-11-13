@@ -162,6 +162,127 @@ Persoonlijk Workboard Systeem met Kanban-stijl layout, volledige geschiedenis tr
 5. **Materialen toewijzen** - Selecteer benodigde voorraad items
 6. **Historie bekijken** - Zie volledige audit trail
 
+## 🐛 Troubleshooting
+
+### Probleem: Werkorder status update faalt
+
+**Symptomen:**
+- Status kan niet naar volgende stap veranderen
+- Knop "Start", "In Wacht Zetten" of "Voltooi" werkt niet
+- Foutmelding bij status wijziging
+
+**Oorzaak:**
+- Materialen niet toegewezen (verplicht)
+- Werkorder is al voltooid
+- Geen rechten voor status update
+- Database synchronisatie fout
+
+**Oplossing:**
+1. Zorg dat alle benodigde materialen zijn toegewezen
+2. Check of werkorder niet al voltooid is
+3. Check huidige rol in profiel (rechts bovenin)
+4. Ververs de pagina (F5)
+5. Check browser console (F12) voor details
+
+---
+
+### Probleem: Kanban drag-and-drop werkt niet
+
+**Symptomen:**
+- Werkorders kunnen niet tussen kolommen versleept worden
+- Cursor toont geen drag-indicator
+- Slepen werkt maar wijziging wordt niet opgeslagen
+
+**Oorzaak:**
+- Browser ondersteunt drag-and-drop niet goed
+- Werkorder is vergrendeld (in bewerking door ander)
+- JavaScript error in browser console
+- Slechte internetverbinding
+
+**Oplossing:**
+1. Update naar nieuwste browser (Chrome 90+, Firefox 88+)
+2. Clear browser cache (Ctrl+Shift+Delete)
+3. Check browser console (F12) voor JavaScript errors
+4. Ververs de pagina (F5)
+5. Test in Incognito Mode
+
+---
+
+### Probleem: Filter/zoek werkt niet
+
+**Symptomen:**
+- Filter op medewerker geeft geen resultaten
+- Zoektekst wordt genegeerd
+- Geselecteerde status filter wordt niet toegepast
+
+**Oorzaak:**
+- Filter is niet correct ingesteld
+- Zoektekst bevat speciale karakters
+- Cache probleem
+- Medewerker filter is leeg
+
+**Oplossing:**
+1. Reset filters door pagina te verversen (F5)
+2. Check of juiste medewerker is geselecteerd
+3. Probeer exacter zoekterm (zonder speciale karakters)
+4. Clear browser cache (Ctrl+Shift+Delete)
+5. Check of werkorders aan medewerker toegewezen zijn
+
+---
+
+### Veelvoorkomende Errors
+
+#### Error: "Cannot update - materials required"
+**Oorzaak:** Werkorder vereist minimaal één materiaal
+**Oplossing:** Voeg materialen toe via "Materiaalbeheer" voor voltooiing
+
+#### Error: "Permission denied for status update"
+**Oorzaak:** Gebruiker heeft geen admin rechten
+**Oplossing:** Vraag admin om status handmatig te wijzigen
+
+#### Error: "Work order is locked"
+**Oorzaak:** Werkorder wordt door ander bewerkt
+**Oplossing:** Wacht totdat bewerking voltooid is, ververs dan pagina
+
+---
+
+### Performance Issues
+
+**Symptomen:** Trage laadtijden, werkorders laden langzaam
+**Mogelijke oorzaken:**
+- Veel werkorders in systeem (> 1000)
+- Veel materialen per werkorder
+- Slechte internetverbinding
+
+**Oplossingen:**
+1. Filter op specifieke medewerker
+2. Clear browser cache (Ctrl+Shift+Delete)
+3. Check Network Tab in F12 voor trage requests
+4. Zorg voor stabiele internetverbinding
+
+---
+
+### History Viewer Issues
+
+**Symptomen:** History toont geen updates, timeline is leeg
+**Oorzaak:**
+- Werkorder is net aangemaakt (geen history nog)
+- Database sync vertraging
+**Oplossing:**
+1. Wacht een paar seconden en ververs pagina
+2. Voer wijziging uit om history te vullen
+3. Check database connectie
+
+---
+
+### Tips voor Debugging
+
+1. **Open Browser Console** (F12) om errors te zien
+2. **Check Network Tab** voor API errors
+3. **Refresh de pagina** (F5) bij rare gedrag
+4. **Controleer materialen** bij status update problemen
+5. **Test in Incognito Mode** om extensies uit te sluiten
+
 ## Gerelateerde Modules
 
 - [Voorraadbeheer](./inventory.md) - Voor materiaalbeheer

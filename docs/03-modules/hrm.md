@@ -206,6 +206,142 @@ Reguliere medewerkers kunnen:
 
 ---
 
+## 🐛 Troubleshooting
+
+### Probleem: Medewerker toevoegen faalt
+
+**Symptomen:**
+- Formulier kan niet ingediend worden
+- Error "Opslaan failed"
+- Medewerker verschijnt niet na opslaan
+
+**Oorzaak:**
+- Verplichte veld niet ingevuld (naam, email)
+- Email is niet uniek
+- Wachtwoord is te zwak
+- Geen admin rechten
+
+**Oplossing:**
+1. Check alle verplichte velden zijn ingevuld
+2. Zorg dat email niet al in systeem bestaat
+3. Gebruik sterk wachtwoord (min. 8 karakters)
+4. Check huidige rol - Admin vereist
+5. Ververs pagina en try opnieuw
+
+---
+
+### Probleem: Rechten niet bijgewerkt
+
+**Symptomen:**
+- Admin checkbox has geen effect
+- Gebruiker heeft nog geen admin rechten na opslaan
+- Rechten wijziging wordt niet opgeslagen
+
+**Oorzaak:**
+- Geen admin rechten om rechten toe te wijzen
+- Database sync probleem
+- Cache is niet vernieuwd
+- Gebruiker niet opnieuw ingelogd
+
+**Oplossing:**
+1. Check dat jij admin bent
+2. Save wijziging opnieuw
+3. Laat gebruiker browser refresh doen (F5)
+4. Laat gebruiker uitloggen en opnieuw inloggen
+5. Check database logs
+
+---
+
+### Probleem: Login credentials kloppen niet
+
+**Symptomen:**
+- Nieuwe medewerker kan niet inloggen
+- "Invalid password" error
+- "User not found" melding
+
+**Oorzaak:**
+- Wachtwoord verkeerd getypt
+- Medewerker is nog niet geactiveerd
+- Email address is fout
+- Caps Lock is aan
+
+**Oplossing:**
+1. Check Caps Lock is uit
+2. Verifieer email adres is correct
+3. Check medewerker is aangemaakt in HRM module
+4. Reset wachtwoord via Admin
+5. Zorg medewerker rechten zijn ingesteld
+
+---
+
+### Veelvoorkomende Errors
+
+#### Error: "Email already exists"
+**Oorzaak:** Dit email adres is al gebruikt
+**Oplossing:** Wijzig email naar unieke waarde
+
+#### Error: "Password too weak"
+**Oorzaak:** Wachtwoord voldoet niet aan vereisten
+**Oplossing:** Gebruik sterker wachtwoord (min. 8 chars, letters + nummers)
+
+#### Error: "Permission denied"
+**Oorzaak:** Gebruiker heeft geen admin rechten
+**Oplossing:** Vraag admin om rechten toe te wijzen
+
+---
+
+### Verlof Tracking Issues
+
+**Symptomen:** Verlof dagen kloppen niet, beschikbaarheid status is fout
+**Mogelijke oorzaken:**
+- Verlof dagen niet correct ingesteld
+- Status niet manueel bijgewerkt
+- Verlofaanvragen niet verwerkt
+**Oplossingen:**
+1. Check verlof dagen instelling
+2. Update beschikbaarheid status handmatig
+3. Controleer Planning module voor vakantie entries
+
+---
+
+### Notities Systeem Issues
+
+**Symptomen:** Notities kunnen niet toegevoegd worden, notitie verdwijnt
+**Mogelijke oorzaken:**
+- Geen admin rechten
+- Formaat fout
+- Database probleem
+**Oplossingen:**
+1. Check admin rechten
+2. Zorg datum, titel, type zijn ingevuld
+3. Ververs pagina
+4. Probeer opnieuw
+
+---
+
+### Dossier View Issues
+
+**Symptomen:** Dossier opent niet, informatie is leeg
+**Mogelijke oorzaken:**
+- Medewerker is net aangemaakt
+- Data sync vertraging
+- Browser cache probleem
+**Oplossingen:**
+1. Wacht een paar seconden
+2. Ververs pagina (F5)
+3. Clear browser cache (Ctrl+Shift+Delete)
+4. Check medewerker details zijn opgeslagen
+
+---
+
+### Tips voor Debugging
+
+1. **Open Browser Console** (F12) om errors te zien
+2. **Check Network Tab** voor API errors
+3. **Refresh de pagina** (F5) bij rare gedrag
+4. **Controleer email uniekheid** voor duplicate problemen
+5. **Test in Incognito Mode** om extensies uit te sluiten
+
 ## Gerelateerde Modules
 
 - [Werkorders](./workorders.md) - Voor medewerker toewijzing aan werkorders
