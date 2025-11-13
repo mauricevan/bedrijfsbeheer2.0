@@ -29,6 +29,8 @@ import { Login } from './pages/Login';
 import { Dashboard } from './pages/modules/Dashboard';
 import { Inventory } from './pages/modules/Inventory';
 import { WorkOrders } from './pages/modules/WorkOrders';
+import { Accounting } from './pages/modules/Accounting';
+import { CRM } from './pages/modules/CRM';
 import './App.css';
 
 /**
@@ -224,33 +226,31 @@ const App: React.FC = () => {
             <Route
               path="/accounting"
               element={
-                <div className="text-center py-20">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                    Boekhouding Module
-                  </h2>
-                  <p className="text-gray-600 mb-8">
-                    Offertes & Facturen
-                  </p>
-                  <div className="inline-block bg-blue-50 text-blue-700 px-6 py-3 rounded-lg">
-                    🚧 In ontwikkeling...
-                  </div>
-                </div>
+                <Accounting
+                  currentUser={currentUser}
+                  quotes={quotes}
+                  setQuotes={setQuotes}
+                  invoices={invoices}
+                  setInvoices={setInvoices}
+                  customers={customers}
+                  inventory={inventory}
+                  workOrders={workOrders}
+                  setWorkOrders={setWorkOrders}
+                  users={users}
+                />
               }
             />
             <Route
               path="/crm"
               element={
-                <div className="text-center py-20">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                    CRM Module
-                  </h2>
-                  <p className="text-gray-600 mb-8">
-                    Klantenbeheer & Leads
-                  </p>
-                  <div className="inline-block bg-blue-50 text-blue-700 px-6 py-3 rounded-lg">
-                    🚧 In ontwikkeling...
-                  </div>
-                </div>
+                <CRM
+                  currentUser={currentUser}
+                  customers={customers}
+                  setCustomers={setCustomers}
+                  leads={leads}
+                  setLeads={setLeads}
+                  invoices={invoices}
+                />
               }
             />
             <Route
