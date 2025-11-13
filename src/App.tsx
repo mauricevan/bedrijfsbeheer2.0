@@ -15,6 +15,7 @@ import { POSPage } from './pages/modules/POSPage';
 import { PlanningPage } from './pages/modules/PlanningPage';
 import { ReportsPage } from './pages/modules/ReportsPage';
 import { AdminSettingsPage } from './pages/modules/AdminSettingsPage';
+import { WebshopPage } from './pages/modules/WebshopPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -27,6 +28,9 @@ import {
   initialLeads,
   initialNotifications,
   initialModuleSettings,
+  initialWebshopProducts,
+  initialWebshopCategories,
+  initialWebshopOrders,
 } from './data/initialData';
 import type {
   User,
@@ -39,6 +43,9 @@ import type {
   Lead,
   Notification,
   ModuleSettings,
+  WebshopProduct,
+  WebshopCategory,
+  WebshopOrder,
 } from './types';
 import './App.css';
 
@@ -82,6 +89,12 @@ const App: React.FC = () => {
   // Notifications
   const [notifications] = useState<Notification[]>(initialNotifications);
   // setNotifications - used later in Notifications module
+
+  // Webshop
+  const [webshopProducts] = useState<WebshopProduct[]>(initialWebshopProducts);
+  const [webshopCategories] = useState<WebshopCategory[]>(initialWebshopCategories);
+  const [webshopOrders] = useState<WebshopOrder[]>(initialWebshopOrders);
+  // setWebshopProducts, setWebshopCategories, setWebshopOrders - managed by hooks
 
   // Module Settings
   const [moduleSettings] = useState<ModuleSettings[]>(initialModuleSettings);
@@ -257,6 +270,15 @@ const App: React.FC = () => {
 
           {currentModule === 'planning' && (
             <PlanningPage currentUser={currentUser} />
+          )}
+
+          {currentModule === 'webshop' && (
+            <WebshopPage
+              currentUser={currentUser}
+              initialProducts={webshopProducts}
+              initialCategories={webshopCategories}
+              initialOrders={webshopOrders}
+            />
           )}
 
           {currentModule === 'reports' && (
