@@ -10,6 +10,7 @@ import { InventoryPage } from './pages/modules/InventoryPage';
 import { WorkOrdersPage } from './pages/modules/WorkOrdersPage';
 import { AccountingPage } from './pages/modules/AccountingPage';
 import { POSPage } from './pages/modules/POSPage';
+import { CRMPage } from './pages/modules/CRMPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -62,9 +63,8 @@ const App: React.FC = () => {
   const [categories, _setCategories] = useState<Category[]>(initialCategories);
 
   // Customers & CRM
-  const [customers] = useState<Customer[]>(initialCustomers);
-  const [leads] = useState<Lead[]>(initialLeads);
-  // setCustomers, setLeads - used later in CRM module
+  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const [leads, setLeads] = useState<Lead[]>(initialLeads);
 
   // WorkOrders
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>(initialWorkOrders);
@@ -253,16 +253,15 @@ const App: React.FC = () => {
           )}
 
           {currentModule === 'crm' && (
-            <div className="p-6 max-w-7xl mx-auto">
-              <div className="bg-white rounded-lg shadow p-8 text-center">
-                <span className="text-6xl mb-4 block">👥</span>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">CRM</h2>
-                <p className="text-gray-600 mb-4">Module in ontwikkeling</p>
-                <p className="text-sm text-gray-500">
-                  {customers.length} klanten, {leads.length} leads
-                </p>
-              </div>
-            </div>
+            <CRMPage
+              currentUser={currentUser}
+              customers={customers}
+              setCustomers={setCustomers}
+              leads={leads}
+              setLeads={setLeads}
+              invoices={invoices}
+              quotes={quotes}
+            />
           )}
 
           {/* Placeholder voor andere modules */}
