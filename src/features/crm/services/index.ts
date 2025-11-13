@@ -1,2 +1,6 @@
-// Barrel file for crm/services
-// Export all services from this module here
+/**
+ * CRM Services - Barrel File
+ * Export all CRM services
+ */
+
+export * from './crmService';

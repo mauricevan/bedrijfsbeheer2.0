@@ -339,6 +339,34 @@ export interface Lead {
   lastContactedAt?: string;
 }
 
+export type InteractionType =
+  | 'call'      // 📞 Telefoon
+  | 'email'     // 📧 Email
+  | 'meeting'   // 🤝 Vergadering
+  | 'note'      // 📝 Notitie
+  | 'sms';      // 💬 SMS
+
+export interface Interaction {
+  id: string;
+  type: InteractionType;
+  subject: string;
+  description?: string;
+
+  // Relaties
+  customerId?: string;
+  leadId?: string;
+
+  // Medewerker
+  userId: string;           // User ID die contact had
+
+  // Timestamps
+  date: string;
+  followUpDate?: string;
+
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Task {
   id: string;
   title: string;
