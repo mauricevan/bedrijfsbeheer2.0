@@ -1,2 +1,5 @@
 // Barrel file for accounting components
-// Export all components from this module here
+export * from './dashboard';
+export * from './quotes';
+export * from './invoices';
+export * from './transactions';
