@@ -14,6 +14,7 @@ import type {
   Lead,
   Notification,
   ModuleSettings,
+  Event,
 } from '../types';
 
 // ============================================================================
@@ -319,6 +320,67 @@ export const initialNotifications: Notification[] = [
     priority: 'low',
     userId: 'user-1',
     module: 'workorders',
+  },
+];
+
+// ============================================================================
+// PLANNING & AGENDA
+// ============================================================================
+
+export const initialEvents: Event[] = [
+  {
+    id: 'event-1',
+    title: 'Werkorder: Elektra installatie Bedrijf XYZ',
+    description: 'Installatie van nieuwe elektra leidingen in kantoorpand',
+    type: 'workorder',
+    startDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow 9:00
+    endDate: new Date(Date.now() + 86400000 + 28800000).toISOString(), // Tomorrow 17:00
+    allDay: false,
+    assignedTo: ['user-2'], // Jan
+    customerId: 'cust-1',
+    workOrderId: 'wo-1',
+    createdBy: 'user-1',
+    createdAt: new Date(Date.now() - 172800000).toISOString(),
+    updatedAt: new Date(Date.now() - 172800000).toISOString(),
+  },
+  {
+    id: 'event-2',
+    title: 'Meeting: Project Bespreking',
+    description: 'Wekelijkse project review meeting met het team',
+    type: 'meeting',
+    startDate: new Date(Date.now() + 172800000).toISOString(), // Day after tomorrow 14:00
+    endDate: new Date(Date.now() + 172800000 + 5400000).toISOString(), // +1.5 hours
+    allDay: false,
+    assignedTo: ['user-1', 'user-2', 'user-3'], // All users
+    createdBy: 'user-1',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+  {
+    id: 'event-3',
+    title: 'Vakantie: Lisa de Vries',
+    description: 'Zomervakantie',
+    type: 'vacation',
+    startDate: new Date(Date.now() + 604800000).toISOString(), // Next week
+    endDate: new Date(Date.now() + 1814400000).toISOString(), // +2 weeks
+    allDay: true,
+    assignedTo: ['user-3'], // Lisa
+    createdBy: 'user-1',
+    createdAt: new Date(Date.now() - 259200000).toISOString(),
+    updatedAt: new Date(Date.now() - 259200000).toISOString(),
+  },
+  {
+    id: 'event-4',
+    title: 'Leverancier Afspraak',
+    description: 'Afspraak met leverancier voor nieuwe materialen',
+    type: 'other',
+    startDate: new Date(Date.now() + 259200000).toISOString(), // 3 days from now 10:00
+    endDate: new Date(Date.now() + 259200000 + 7200000).toISOString(), // +2 hours
+    allDay: false,
+    assignedTo: ['user-1'], // Sophie
+    createdBy: 'user-1',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
   },
 ];
 

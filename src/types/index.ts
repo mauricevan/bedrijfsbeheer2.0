@@ -441,10 +441,13 @@ export interface Sale {
 // 9. PLANNING MODULE (Agenda)
 // ============================================================================
 
+export type EventType = 'workorder' | 'meeting' | 'vacation' | 'other';
+
 export interface Event {
   id: string;
   title: string;
   description?: string;
+  type: EventType;
 
   // Tijd
   startDate: string;

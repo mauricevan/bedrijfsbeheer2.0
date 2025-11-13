@@ -12,6 +12,7 @@ import { AccountingPage } from './pages/modules/AccountingPage';
 import { CRMPage } from './pages/modules/CRMPage';
 import { HRMPage } from './pages/modules/HRMPage';
 import { POSPage } from './pages/modules/POSPage';
+import { PlanningPage } from './pages/modules/PlanningPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -24,6 +25,7 @@ import {
   initialLeads,
   initialNotifications,
   initialModuleSettings,
+  initialEvents,
 } from './data/initialData';
 import type {
   User,
@@ -36,6 +38,7 @@ import type {
   Lead,
   Notification,
   ModuleSettings,
+  Event,
 } from './types';
 import './App.css';
 
@@ -81,6 +84,10 @@ const App: React.FC = () => {
   // Notifications
   const [notifications] = useState<Notification[]>(initialNotifications);
   // setNotifications - used later in Notifications module
+
+  // Planning & Events
+  const [events] = useState<Event[]>(initialEvents);
+  // setEvents - managed by usePlanning hook in PlanningPage
 
   // Module Settings
   const [moduleSettings] = useState<ModuleSettings[]>(initialModuleSettings);
@@ -260,8 +267,17 @@ const App: React.FC = () => {
             />
           )}
 
+          {currentModule === 'planning' && (
+            <PlanningPage
+              currentUser={currentUser}
+              users={users}
+              customers={customers}
+              initialEvents={events}
+            />
+          )}
+
           {/* Placeholder voor andere modules */}
-          {!['dashboard', 'inventory', 'workorders', 'accounting', 'crm', 'hrm', 'pos'].includes(
+          {!['dashboard', 'inventory', 'workorders', 'accounting', 'crm', 'hrm', 'pos', 'planning'].includes(
             currentModule
           ) && (
             <div className="p-6 max-w-7xl mx-auto">
