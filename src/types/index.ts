@@ -363,6 +363,31 @@ export interface Task {
   completedAt?: string;
 }
 
+export type InteractionType = 'call' | 'email' | 'meeting' | 'note' | 'sms';
+
+export interface Interaction {
+  id: string;
+  type: InteractionType;
+
+  // Content
+  subject: string;
+  description?: string;
+
+  // Relaties
+  customerId?: string;
+  leadId?: string;
+  userId: string;           // Wie heeft interactie gehad
+
+  // Follow-up
+  followUpDate?: string;
+  followUpCompleted?: boolean;
+
+  // Timestamps
+  interactionDate: string;  // Wanneer vond interactie plaats
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ============================================================================
 // 7. HRM MODULE (Personeelsbeheer)
 // ============================================================================
