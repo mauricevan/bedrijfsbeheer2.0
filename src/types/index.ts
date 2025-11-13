@@ -363,9 +363,46 @@ export interface Task {
   completedAt?: string;
 }
 
+export type InteractionType = 'call' | 'email' | 'meeting' | 'note' | 'sms';
+
+export interface Interaction {
+  id: string;
+  type: InteractionType;
+
+  // Content
+  subject: string;
+  description?: string;
+
+  // Relaties
+  customerId?: string;
+  leadId?: string;
+  userId: string;           // Wie heeft interactie gehad
+
+  // Follow-up
+  followUpDate?: string;
+  followUpCompleted?: boolean;
+
+  // Timestamps
+  interactionDate: string;  // Wanneer vond interactie plaats
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ============================================================================
 // 7. HRM MODULE (Personeelsbeheer)
 // ============================================================================
+
+export type EmployeeAvailability = 'available' | 'unavailable' | 'vacation';
+
+export type EmployeeNoteType =
+  | 'late' // ⏰ Te laat
+  | 'absent' // ❌ Afwezig
+  | 'milestone' // 🎯 Milestone
+  | 'performance' // 📊 Prestatie
+  | 'warning' // ⚠️ Waarschuwing
+  | 'compliment' // ⭐ Compliment
+  | 'attendance' // ✅ Aanwezigheid
+  | 'general'; // 📝 Algemeen
 
 export interface Employee extends User {
   // Extra employee fields
@@ -378,6 +415,9 @@ export interface Employee extends User {
   vacationDays?: number;
   vacationDaysUsed?: number;
 
+  // Beschikbaarheid
+  availability?: EmployeeAvailability;
+
   // Notities
   notes?: EmployeeNote[];
 }
@@ -385,10 +425,13 @@ export interface Employee extends User {
 export interface EmployeeNote {
   id: string;
   employeeId: string;
-  type: 'general' | 'milestone' | 'warning' | 'late';
-  content: string;
-  createdBy: string;
+  type: EmployeeNoteType;
+  date: string; // Datum van de gebeurtenis
+  title: string; // Korte samenvatting
+  description: string; // Uitgebreide details
+  createdBy: string; // User ID van admin die notitie maakte
   createdAt: string;
+  updatedAt?: string;
 }
 
 // ============================================================================
@@ -495,33 +538,122 @@ export interface Report {
 // 11. WEBSHOP MODULE
 // ============================================================================
 
+export type WebshopProductStatus = 'draft' | 'active' | 'archived';
+export type WebshopProductVisibility = 'public' | 'private' | 'hidden';
+export type WebshopShippingCategory = 'standard' | 'express' | 'pickup';
+
+export interface WebshopProductVariant {
+  id: string;
+  type: 'color' | 'size' | 'other';
+  name: string;
+  value: string;
+  priceAdjustment?: number;
+  stockQuantity?: number;
+}
+
 export interface WebshopProduct {
   id: string;
   inventoryItemId?: string; // Link naar voorraad
 
+  // Basis informatie
   name: string;
-  description: string;
-  price: number;
+  slug: string; // URL-vriendelijke naam (auto-generated)
+  sku: string; // PRD-0001, PRD-0002, etc.
+  shortDescription?: string;
+  longDescription?: string;
 
-  // Webshop specifiek
-  images?: string[];
-  category?: string;
-  tags?: string[];
+  // Prijs & Voorraad
+  salePrice: number; // Actuele verkoopprijs
+  originalPrice?: number; // Was-prijs voor strikethrough
+  costPrice?: number; // Inkoopprijs
+  trackInventory: boolean;
+  stockQuantity: number;
+  lowStockThreshold: number;
+
+  // Categorieën
+  categoryIds: string[]; // Multi-category support
+  primaryCategoryId?: string;
+
+  // Status & Zichtbaarheid
+  status: WebshopProductStatus;
+  visibility: WebshopProductVisibility;
   featured: boolean;
 
-  // Voorraad
-  inStock: boolean;
-  stockQuantity?: number;
+  // Verzending
+  weight?: number; // kg
+  dimensions?: {
+    length: number; // cm
+    width: number;
+    height: number;
+  };
+  shippingCategory: WebshopShippingCategory;
+  isDigitalProduct: boolean;
 
-  // SEO
-  slug?: string;
+  // SEO & Marketing
+  metaTitle?: string;
   metaDescription?: string;
+  tags?: string[];
+
+  // Extra
+  vatRate: number; // 21, 9 of 0
+  allowReviews: boolean;
+  adminNotes?: string;
+
+  // Images
+  images?: string[];
+  featuredImage?: string;
+
+  // Varianten
+  variants?: WebshopProductVariant[];
+
+  // Statistieken
+  viewCount?: number;
+  purchaseCount?: number;
+  wishlistCount?: number;
 
   createdAt: string;
   updatedAt: string;
 }
 
-export interface Order {
+export interface WebshopCategory {
+  id: string;
+  name: string;
+  slug: string; // URL-vriendelijke naam
+  description?: string;
+  parentCategoryId?: string; // Voor hiërarchische structuur
+  sortOrder: number;
+  isActive: boolean;
+
+  // SEO
+  metaTitle?: string;
+  metaDescription?: string;
+
+  // Stats
+  productCount?: number;
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type WebshopOrderStatus =
+  | 'pending'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled'
+  | 'refunded';
+
+export type WebshopPaymentStatus = 'unpaid' | 'paid' | 'failed';
+
+export interface WebshopOrderItem {
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
+export interface WebshopOrder {
   id: string;
   orderNumber: string;
 
@@ -529,23 +661,20 @@ export interface Order {
   customerId?: string;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
 
   // Items
-  items: {
-    productId: string;
-    quantity: number;
-    unitPrice: number;
-    total: number;
-  }[];
+  items: WebshopOrderItem[];
 
   // Totalen
   subtotal: number;
   shippingCost: number;
+  discount?: number;
   vatAmount: number;
   total: number;
 
   // Status
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: WebshopOrderStatus;
 
   // Verzending
   shippingAddress: {
@@ -554,16 +683,33 @@ export interface Order {
     postalCode: string;
     country: string;
   };
+  billingAddress?: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  trackingNumber?: string;
+  carrier?: string;
 
   // Betaling
   paymentMethod: string;
-  paymentStatus: 'pending' | 'paid' | 'failed';
+  paymentStatus: WebshopPaymentStatus;
+  paymentReference?: string;
+  paidAt?: string;
+
+  // Notities
+  customerNotes?: string;
+  adminNotes?: string;
 
   createdAt: string;
   updatedAt: string;
   shippedAt?: string;
   deliveredAt?: string;
 }
+
+// Legacy Order type for backwards compatibility
+export type Order = WebshopOrder;
 
 // ============================================================================
 // 12. ADMIN SETTINGS MODULE

@@ -1,407 +1,328 @@
-import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import type {
-  User,
-  Customer,
-  InventoryItem,
-  Category,
-  WorkOrder,
-  Quote,
-  Invoice,
-  Notification,
-  Lead,
-} from './types/index';
+/**
+ * App Component - Root
+ * Centralized state management volgens CONVENTIONS.md
+ */
 
-// Initial Data
+import React, { useState, useEffect } from 'react';
+import { LoginPage } from './components/auth';
+import { DashboardPage } from './pages/modules/DashboardPage';
+import { InventoryPage } from './pages/modules/InventoryPage';
+import { WorkOrdersPage } from './pages/modules/WorkOrdersPage';
+import { AccountingPage } from './pages/modules/AccountingPage';
+import { CRMPage } from './pages/modules/CRMPage';
+import { HRMPage } from './pages/modules/HRMPage';
+import { POSPage } from './pages/modules/POSPage';
+import { PlanningPage } from './pages/modules/PlanningPage';
+import { ReportsPage } from './pages/modules/ReportsPage';
+import { AdminSettingsPage } from './pages/modules/AdminSettingsPage';
+import { WebshopPage } from './pages/modules/WebshopPage';
+import { useAuth } from './features/auth';
 import {
   initialUsers,
-  initialCustomers,
   initialInventory,
   initialCategories,
+  initialCustomers,
   initialWorkOrders,
   initialQuotes,
   initialInvoices,
+  initialLeads,
   initialNotifications,
+  initialModuleSettings,
+  initialWebshopProducts,
+  initialWebshopCategories,
+  initialWebshopOrders,
 } from './data/initialData';
-
-// Pages
-import { Login } from './pages/Login';
-import { Dashboard } from './pages/modules/Dashboard';
-import { Inventory } from './pages/modules/Inventory';
-import { WorkOrders } from './pages/modules/WorkOrders';
-import { Accounting } from './pages/modules/Accounting';
-import { CRM } from './pages/modules/CRM';
+import type {
+  User,
+  InventoryItem,
+  Category,
+  Customer,
+  WorkOrder,
+  Quote,
+  Invoice,
+  Lead,
+  Notification,
+  ModuleSettings,
+  WebshopProduct,
+  WebshopCategory,
+  WebshopOrder,
+} from './types';
 import './App.css';
 
 /**
- * App Component - Root component met centralized state management
+ * App - Root Component
  *
- * Architectuur Principes:
- * - Alle state bevindt zich in App.tsx (single source of truth)
- * - Props drilling pattern voor data flow
- * - Immutable updates (spread operators)
- * - Role-based access control (Admin vs User)
- *
- * State Management:
- * - Authentication: currentUser
- * - Data: customers, inventory, workOrders, quotes, invoices, etc.
- * - UI: notifications
- *
- * Voor details zie: docs/AI_GUIDE.md en docs/02-architecture/state-management.md
+ * Centralized State Management:
+ * - Alle state wordt hier beheerd
+ * - Props drilling naar child components
+ * - Volgens architectuur in CONVENTIONS.md
  */
 
 const App: React.FC = () => {
   // ============================================================================
-  // AUTHENTICATION STATE
+  // STATE - Centralized volgens docs
   // ============================================================================
 
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>(initialUsers);
-
-  // ============================================================================
-  // BUSINESS DATA STATE
-  // ============================================================================
-
-  // Customers & CRM
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
-  const [leads, setLeads] = useState<Lead[]>([]);
+  // Authentication
+  const [users] = useState<User[]>(initialUsers);
+  const { currentUser, loginError, login, logout, checkStoredSession } = useAuth(users);
 
   // Inventory
-  const [inventory, setInventory] = useState<InventoryItem[]>(initialInventory);
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [inventory] = useState<InventoryItem[]>(initialInventory);
+  const [categories] = useState<Category[]>(initialCategories);
+  // setInventory, setCategories - state managed by useInventory hook in InventoryPage
 
-  // Workorders
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(initialWorkOrders);
+  // Customers & CRM
+  const [customers] = useState<Customer[]>(initialCustomers);
+  const [leads] = useState<Lead[]>(initialLeads);
+  // setCustomers, setLeads - used later in CRM module
+
+  // WorkOrders
+  const [workOrders] = useState<WorkOrder[]>(initialWorkOrders);
+  // setWorkOrders - used later in WorkOrders module
 
   // Accounting
-  const [quotes, setQuotes] = useState<Quote[]>(initialQuotes);
-  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
+  const [quotes] = useState<Quote[]>(initialQuotes);
+  const [invoices] = useState<Invoice[]>(initialInvoices);
+  // setQuotes, setInvoices - used later in Accounting module
 
   // Notifications
-  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+  const [notifications] = useState<Notification[]>(initialNotifications);
+  // setNotifications - used later in Notifications module
+
+  // Webshop
+  const [webshopProducts] = useState<WebshopProduct[]>(initialWebshopProducts);
+  const [webshopCategories] = useState<WebshopCategory[]>(initialWebshopCategories);
+  const [webshopOrders] = useState<WebshopOrder[]>(initialWebshopOrders);
+  // setWebshopProducts, setWebshopCategories, setWebshopOrders - managed by hooks
+
+  // Module Settings
+  const [moduleSettings] = useState<ModuleSettings[]>(initialModuleSettings);
+
+  // UI State
+  const [currentModule, setCurrentModule] = useState<string>('dashboard');
 
   // ============================================================================
-  // AUTHENTICATION HANDLERS
+  // EFFECTS
   // ============================================================================
 
-  const handleLogin = (user: User) => {
-    setCurrentUser(user);
+  // Check stored session on mount
+  useEffect(() => {
+    checkStoredSession();
+  }, [checkStoredSession]);
+
+  // ============================================================================
+  // HANDLERS
+  // ============================================================================
+
+  const handleLogin = (email: string, password: string) => {
+    login(email, password);
   };
 
   const handleLogout = () => {
-    setCurrentUser(null);
+    logout();
+    setCurrentModule('dashboard');
   };
 
   // ============================================================================
   // RENDER
   // ============================================================================
 
-  // Show login if not authenticated
+  // Not logged in - show login page
   if (!currentUser) {
-    return <Login onLogin={handleLogin} users={users} />;
+    return <LoginPage onLogin={handleLogin} error={loginError} />;
   }
 
+  // Logged in - show app
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-gray-50">
-        {/* Main Navigation Header */}
-        <nav className="bg-white shadow-md sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              {/* Logo & Title */}
-              <div className="flex items-center gap-3">
-                <div className="bg-gradient-to-r from-sky-500 to-blue-600 text-white p-2 rounded-lg">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">
-                    Bedrijfsbeheer Dashboard
-                  </h1>
-                  <p className="text-xs text-gray-500">v5.8.0</p>
-                </div>
-              </div>
-
-              {/* User Info */}
-              <div className="flex items-center gap-4">
-                {/* Notifications Badge */}
-                <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  </svg>
-                  {notifications.filter(n => !n.read).length > 0 && (
-                    <span className="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {notifications.filter(n => !n.read).length}
-                    </span>
-                  )}
-                </button>
-
-                {/* User Info */}
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-gray-900">{currentUser.name}</p>
-                    <p className="text-xs text-gray-500">
-                      {currentUser.isAdmin ? '👑 Admin' : '👤 User'} • {currentUser.role}
-                    </p>
-                  </div>
-
-                  {/* Logout Button */}
-                  <button
-                    onClick={handleLogout}
-                    className="bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
-                  >
-                    Uitloggen
-                  </button>
-                </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header/Navigation */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <span className="text-2xl">🏢</span>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">Bedrijfsbeheer</h1>
+                <p className="text-xs text-gray-600">Versie 6.0.0</p>
               </div>
             </div>
-          </div>
-        </nav>
 
-        {/* Module Navigation */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex gap-4 overflow-x-auto py-3">
-              <NavButton to="/dashboard" icon="📊" label="Dashboard" />
-              <NavButton to="/inventory" icon="📦" label="Voorraad" />
-              <NavButton to="/workorders" icon="🔧" label="Werkorders" />
-              <NavButton to="/accounting" icon="💰" label="Boekhouding" />
-              <NavButton to="/crm" icon="👥" label="CRM" />
-              {currentUser.isAdmin && (
-                <>
-                  <NavButton to="/hrm" icon="👨‍💼" label="HRM" />
-                  <NavButton to="/pos" icon="🛒" label="POS" />
-                  <NavButton to="/planning" icon="📅" label="Planning" />
-                  <NavButton to="/reports" icon="📈" label="Reports" />
-                  <NavButton to="/admin" icon="⚙️" label="Instellingen" />
-                </>
-              )}
+            {/* User Info */}
+            <div className="flex items-center space-x-4">
+              {/* Notifications Badge */}
+              <button className="relative p-2 text-gray-600 hover:text-gray-900">
+                <span className="text-xl">🔔</span>
+                {notifications.filter((n) => !n.read).length > 0 && (
+                  <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                    {notifications.filter((n) => !n.read).length}
+                  </span>
+                )}
+              </button>
+
+              {/* User Menu */}
+              <div className="flex items-center space-x-3">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900">{currentUser.name}</p>
+                  <p className="text-xs text-gray-600">
+                    {currentUser.isAdmin ? 'Administrator' : 'Medewerker'}
+                  </p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                >
+                  Uitloggen
+                </button>
+              </div>
             </div>
           </div>
         </div>
+      </header>
 
-        {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route
-              path="/dashboard"
-              element={
-                <Dashboard
-                  currentUser={currentUser}
-                  workOrders={workOrders}
-                  inventory={inventory}
-                  quotes={quotes}
-                  invoices={invoices}
-                  notifications={notifications}
-                />
-              }
-            />
-            <Route
-              path="/inventory"
-              element={
-                <Inventory
-                  currentUser={currentUser}
-                  inventory={inventory}
-                  setInventory={setInventory}
-                  categories={categories}
-                  setCategories={setCategories}
-                />
-              }
-            />
-            <Route
-              path="/workorders"
-              element={
-                <WorkOrders
-                  currentUser={currentUser}
-                  workOrders={workOrders}
-                  setWorkOrders={setWorkOrders}
-                  users={users}
-                  customers={customers}
-                  inventory={inventory}
-                />
-              }
-            />
-            <Route
-              path="/accounting"
-              element={
-                <Accounting
-                  currentUser={currentUser}
-                  quotes={quotes}
-                  setQuotes={setQuotes}
-                  invoices={invoices}
-                  setInvoices={setInvoices}
-                  customers={customers}
-                  inventory={inventory}
-                  workOrders={workOrders}
-                  setWorkOrders={setWorkOrders}
-                  users={users}
-                />
-              }
-            />
-            <Route
-              path="/crm"
-              element={
-                <CRM
-                  currentUser={currentUser}
-                  customers={customers}
-                  setCustomers={setCustomers}
-                  leads={leads}
-                  setLeads={setLeads}
-                  invoices={invoices}
-                />
-              }
-            />
-            <Route
-              path="/hrm"
-              element={
-                currentUser.isAdmin ? (
-                  <div className="text-center py-20">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                      HRM Module
-                    </h2>
-                    <p className="text-gray-600 mb-8">
-                      Personeelsbeheer
-                    </p>
-                    <div className="inline-block bg-blue-50 text-blue-700 px-6 py-3 rounded-lg">
-                      🚧 In ontwikkeling...
-                    </div>
-                  </div>
-                ) : (
-                  <Navigate to="/dashboard" replace />
-                )
-              }
-            />
-            <Route
-              path="/pos"
-              element={
-                currentUser.isAdmin ? (
-                  <div className="text-center py-20">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                      POS Module
-                    </h2>
-                    <p className="text-gray-600 mb-8">
-                      Kassasysteem
-                    </p>
-                    <div className="inline-block bg-blue-50 text-blue-700 px-6 py-3 rounded-lg">
-                      🚧 In ontwikkeling...
-                    </div>
-                  </div>
-                ) : (
-                  <Navigate to="/dashboard" replace />
-                )
-              }
-            />
-            <Route
-              path="/planning"
-              element={
-                currentUser.isAdmin ? (
-                  <div className="text-center py-20">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                      Planning Module
-                    </h2>
-                    <p className="text-gray-600 mb-8">
-                      Agenda & Kalender
-                    </p>
-                    <div className="inline-block bg-blue-50 text-blue-700 px-6 py-3 rounded-lg">
-                      🚧 In ontwikkeling...
-                    </div>
-                  </div>
-                ) : (
-                  <Navigate to="/dashboard" replace />
-                )
-              }
-            />
-            <Route
-              path="/reports"
-              element={
-                currentUser.isAdmin ? (
-                  <div className="text-center py-20">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                      Reports Module
-                    </h2>
-                    <p className="text-gray-600 mb-8">
-                      Rapportages & Analytics
-                    </p>
-                    <div className="inline-block bg-blue-50 text-blue-700 px-6 py-3 rounded-lg">
-                      🚧 In ontwikkeling...
-                    </div>
-                  </div>
-                ) : (
-                  <Navigate to="/dashboard" replace />
-                )
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                currentUser.isAdmin ? (
-                  <div className="text-center py-20">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                      Admin Instellingen
-                    </h2>
-                    <p className="text-gray-600 mb-8">
-                      Modules & Systeem Configuratie
-                    </p>
-                    <div className="inline-block bg-blue-50 text-blue-700 px-6 py-3 rounded-lg">
-                      🚧 In ontwikkeling...
-                    </div>
-                  </div>
-                ) : (
-                  <Navigate to="/dashboard" replace />
-                )
-              }
-            />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </main>
-
-        {/* Footer */}
-        <footer className="bg-white border-t border-gray-200 mt-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-gray-500">
-                © 2025 Bedrijfsbeheer Dashboard • Versie 5.8.0
-              </p>
-              <p className="text-sm text-gray-500">
-                Gebouwd met React 19 + TypeScript + Tailwind CSS 4
-              </p>
-            </div>
+      {/* Main Content */}
+      <main>
+        {/* Navigation Tabs */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-6">
+            <nav className="flex space-x-8 overflow-x-auto">
+              {moduleSettings
+                .filter((mod) => mod.enabled)
+                .filter((mod) => {
+                  // Hide admin-only modules for non-admin users
+                  if (!currentUser.isAdmin) {
+                    return !['admin', 'accounting', 'hrm'].includes(mod.moduleName);
+                  }
+                  return true;
+                })
+                .map((mod) => (
+                  <button
+                    key={mod.id}
+                    onClick={() => setCurrentModule(mod.moduleName)}
+                    className={`flex items-center space-x-2 px-1 py-4 border-b-2 font-medium text-sm whitespace-nowrap transition ${
+                      currentModule === mod.moduleName
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                    }`}
+                  >
+                    <span>{mod.icon}</span>
+                    <span>{mod.displayName}</span>
+                  </button>
+                ))}
+            </nav>
           </div>
-        </footer>
-      </div>
-    </BrowserRouter>
-  );
-};
+        </div>
 
-// ============================================================================
-// HELPER COMPONENTS
-// ============================================================================
+        {/* Module Content */}
+        <div className="py-6">
+          {currentModule === 'dashboard' && (
+            <DashboardPage
+              currentUser={currentUser}
+              workOrders={workOrders}
+              invoices={invoices}
+              quotes={quotes}
+              notifications={notifications}
+              inventory={inventory}
+            />
+          )}
 
-interface NavButtonProps {
-  to: string;
-  icon: string;
-  label: string;
-}
+          {currentModule === 'inventory' && (
+            <InventoryPage
+              currentUser={currentUser}
+              initialInventory={inventory}
+              initialCategories={categories}
+            />
+          )}
 
-const NavButton: React.FC<NavButtonProps> = ({ to, icon, label }) => {
-  const isActive = window.location.pathname === to;
+          {currentModule === 'workorders' && (
+            <WorkOrdersPage
+              currentUser={currentUser}
+              initialWorkOrders={workOrders}
+              availableUsers={users}
+            />
+          )}
 
-  return (
-    <a
-      href={to}
-      className={`
-        flex items-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap text-sm font-medium
-        ${isActive
-          ? 'bg-sky-100 text-sky-700'
-          : 'text-gray-600 hover:bg-gray-100'
-        }
-      `}
-    >
-      <span>{icon}</span>
-      <span>{label}</span>
-    </a>
+          {currentModule === 'accounting' && currentUser.isAdmin && (
+            <AccountingPage
+              currentUser={currentUser}
+              initialQuotes={quotes}
+              initialInvoices={invoices}
+              customers={customers}
+              inventory={inventory}
+            />
+          )}
+
+          {currentModule === 'crm' && (
+            <CRMPage
+              currentUser={currentUser}
+              initialCustomers={customers}
+              initialLeads={leads}
+            />
+          )}
+
+          {currentModule === 'hrm' && currentUser.isAdmin && (
+            <HRMPage currentUser={currentUser} users={users} />
+          )}
+
+          {currentModule === 'pos' && (
+            <POSPage currentUser={currentUser} inventory={inventory} customers={customers} />
+          )}
+
+          {currentModule === 'planning' && (
+            <PlanningPage currentUser={currentUser} />
+          )}
+
+          {currentModule === 'webshop' && (
+            <WebshopPage
+              currentUser={currentUser}
+              initialProducts={webshopProducts}
+              initialCategories={webshopCategories}
+              initialOrders={webshopOrders}
+            />
+          )}
+
+          {currentModule === 'reports' && (
+            <ReportsPage
+              currentUser={currentUser}
+              workOrders={workOrders}
+              invoices={invoices}
+              quotes={quotes}
+            />
+          )}
+
+          {currentModule === 'admin' && currentUser.isAdmin && (
+            <AdminSettingsPage
+              currentUser={currentUser}
+              moduleSettings={moduleSettings}
+            />
+          )}
+
+          {/* Placeholder voor overige modules */}
+          {!['dashboard', 'inventory', 'workorders', 'accounting', 'crm', 'hrm', 'pos', 'planning', 'reports', 'admin'].includes(
+            currentModule
+          ) && (
+            <div className="p-6 max-w-7xl mx-auto">
+              <div className="bg-white rounded-lg shadow p-8 text-center">
+                <span className="text-6xl mb-4 block">🚧</span>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  {moduleSettings.find((m) => m.moduleName === currentModule)?.displayName}
+                </h2>
+                <p className="text-gray-600">Module wordt binnenkort toegevoegd</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 mt-auto">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <p className="text-center text-sm text-gray-600">
+            © 2025 Bedrijfsbeheer Dashboard v6.0.0 - Gebouwd volgens MD specificaties
+          </p>
+        </div>
+      </footer>
+    </div>
   );
 };
 

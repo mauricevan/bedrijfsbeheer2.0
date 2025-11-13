@@ -1,918 +1,479 @@
 /**
- * HRMPage - Human Resource Management (Personeelsbeheer)
- * Features: Employee management, Leave tracking, Notes system, Personal files
- * Version: MVP 1.0
+ * HRMPage - Human Resource Management
+ * Volledig personeelsbeheer met medewerkers en notities systeem
  */
 
-import React, { useState, useMemo } from 'react';
-import type { User } from '../../types';
+import React, { useState } from 'react';
+import type { User, Employee, EmployeeNote, EmployeeAvailability, EmployeeNoteType } from '../../types';
+import { useEmployees, useEmployeeNotes } from '../../features/hrm';
 
-export interface EmployeeNote {
-  id: string;
-  employeeId: string;
-  type: 'late' | 'absent' | 'milestone' | 'performance' | 'warning' | 'compliment' | 'attendance' | 'general';
-  title: string;
-  description: string;
-  date: string;
-  createdBy: string;
-  createdAt: string;
-}
+type HRMPageProps = {
+  currentUser: User;
+  users: User[];
+};
 
-export interface Employee extends User {
-  jobTitle?: string;
-  department?: string;
-  hireDate?: string;
-  phone?: string;
-  vacationDays?: number;
-  vacationDaysUsed?: number;
-  notes?: EmployeeNote[];
-  status?: 'available' | 'unavailable' | 'vacation';
-}
+export const HRMPage: React.FC<HRMPageProps> = ({ currentUser, users }) => {
+  // Convert users to employees (Employee extends User)
+  const employees = users as Employee[];
 
-interface HRMPageProps {
-  currentUser: User | null;
-  employees: Employee[];
-  setEmployees: React.Dispatch<React.SetStateAction<Employee[]>>;
-}
+  const {
+    enrichedEmployees,
+    filteredEmployees,
+    stats,
+    searchTerm,
+    filterAvailability,
+    handleSearch,
+    clearSearch,
+    setAvailabilityFilter,
+    setAvailability,
+    calculateTenure,
+    calculateAvailableVacation,
+  } = useEmployees(employees);
 
-export const HRMPage: React.FC<HRMPageProps> = ({
-  currentUser,
-  employees,
-  setEmployees,
-}) => {
-  // ============================================================================
-  // STATE
-  // ============================================================================
-
-  const [showEmployeeForm, setShowEmployeeForm] = useState(false);
-  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  // State for employee dossier modal
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [showNoteForm, setShowNoteForm] = useState(false);
-
-  const [employeeFormData, setEmployeeFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    jobTitle: '',
-    department: '',
-    phone: '',
-    hireDate: new Date().toISOString().split('T')[0],
-    vacationDays: 25,
-    isAdmin: false,
-  });
-
-  const [noteFormData, setNoteFormData] = useState({
-    type: 'general' as EmployeeNote['type'],
+  const [showAddNoteModal, setShowAddNoteModal] = useState(false);
+  const [noteForm, setNoteForm] = useState<{
+    type: EmployeeNoteType;
+    date: string;
+    title: string;
+    description: string;
+  }>({
+    type: 'general',
+    date: new Date().toISOString().split('T')[0],
     title: '',
     description: '',
-    date: new Date().toISOString().split('T')[0],
   });
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const isAdmin = currentUser.isAdmin;
 
-  // ============================================================================
-  // COMPUTED DATA
-  // ============================================================================
-
-  const statistics = useMemo(() => {
-    const totalEmployees = employees.length;
-    const uniqueJobTitles = new Set(employees.map(e => e.jobTitle).filter(Boolean)).size;
-    
-    const totalServiceYears = employees.reduce((sum, emp) => {
-      if (emp.hireDate) {
-        const years = (new Date().getTime() - new Date(emp.hireDate).getTime()) / (1000 * 60 * 60 * 24 * 365);
-        return sum + years;
-      }
-      return sum;
-    }, 0);
-    
-    const avgServiceYears = totalEmployees > 0 ? totalServiceYears / totalEmployees : 0;
-
-    const admins = employees.filter(e => e.isAdmin).length;
-    const available = employees.filter(e => e.status === 'available' || !e.status).length;
-    const onVacation = employees.filter(e => e.status === 'vacation').length;
-
-    return {
-      totalEmployees,
-      uniqueJobTitles,
-      avgServiceYears: avgServiceYears.toFixed(1),
-      admins,
-      available,
-      onVacation,
-    };
-  }, [employees]);
-
-  const filteredEmployees = useMemo(() => {
-    return employees.filter(emp => {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        emp.name.toLowerCase().includes(searchLower) ||
-        emp.email.toLowerCase().includes(searchLower) ||
-        (emp.jobTitle && emp.jobTitle.toLowerCase().includes(searchLower))
-      );
-    });
-  }, [employees, searchTerm]);
-
-  // ============================================================================
-  // HANDLERS
-  // ============================================================================
-
-  const handleCreateEmployee = () => {
-    setEditingEmployee(null);
-    setEmployeeFormData({
-      name: '',
-      email: '',
-      password: '',
-      jobTitle: '',
-      department: '',
-      phone: '',
-      hireDate: new Date().toISOString().split('T')[0],
-      vacationDays: 25,
-      isAdmin: false,
-    });
-    setShowEmployeeForm(true);
-  };
-
-  const handleEditEmployee = (employee: Employee) => {
-    setEditingEmployee(employee);
-    setEmployeeFormData({
-      name: employee.name,
-      email: employee.email,
-      password: '', // Don't pre-fill password
-      jobTitle: employee.jobTitle || '',
-      department: employee.department || '',
-      phone: employee.phone || '',
-      hireDate: employee.hireDate || new Date().toISOString().split('T')[0],
-      vacationDays: employee.vacationDays || 25,
-      isAdmin: employee.isAdmin,
-    });
-    setShowEmployeeForm(true);
-  };
-
-  const handleSaveEmployee = () => {
-    if (!currentUser?.isAdmin) {
-      alert('Alleen admins kunnen medewerkers beheren');
-      return;
-    }
-
-    if (!employeeFormData.name || !employeeFormData.email) {
-      alert('Naam en email zijn verplicht');
-      return;
-    }
-
-    if (!editingEmployee && !employeeFormData.password) {
-      alert('Wachtwoord is verplicht voor nieuwe medewerkers');
-      return;
-    }
-
-    if (editingEmployee) {
-      // Update existing employee
-      setEmployees(prev => prev.map(emp =>
-        emp.id === editingEmployee.id
-          ? {
-              ...emp,
-              name: employeeFormData.name,
-              email: employeeFormData.email,
-              ...(employeeFormData.password && { password: employeeFormData.password }), // Only update if provided
-              jobTitle: employeeFormData.jobTitle,
-              department: employeeFormData.department,
-              phone: employeeFormData.phone,
-              hireDate: employeeFormData.hireDate,
-              vacationDays: employeeFormData.vacationDays,
-              isAdmin: employeeFormData.isAdmin,
-              role: employeeFormData.isAdmin ? 'admin' : 'user',
-              updatedAt: new Date().toISOString(),
-            }
-          : emp
-      ));
-    } else {
-      // Create new employee
-      const newEmployee: Employee = {
-        id: `user-${Date.now()}`,
-        name: employeeFormData.name,
-        email: employeeFormData.email,
-        password: employeeFormData.password,
-        isAdmin: employeeFormData.isAdmin,
-        role: employeeFormData.isAdmin ? 'admin' : 'user',
-        jobTitle: employeeFormData.jobTitle,
-        department: employeeFormData.department,
-        phone: employeeFormData.phone,
-        hireDate: employeeFormData.hireDate,
-        vacationDays: employeeFormData.vacationDays,
-        vacationDaysUsed: 0,
-        notes: [],
-        status: 'available',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      setEmployees(prev => [...prev, newEmployee]);
-    }
-
-    setShowEmployeeForm(false);
-    setEditingEmployee(null);
-  };
-
-  const handleDeleteEmployee = (employeeId: string) => {
-    if (!currentUser?.isAdmin) {
-      alert('Alleen admins kunnen medewerkers verwijderen');
-      return;
-    }
-
-    if (employeeId === currentUser.id) {
-      alert('Je kunt jezelf niet verwijderen');
-      return;
-    }
-
-    if (!confirm('Weet je zeker dat je deze medewerker wilt verwijderen?')) {
-      return;
-    }
-
-    setEmployees(prev => prev.filter(emp => emp.id !== employeeId));
-  };
-
-  const handleAddNote = () => {
-    if (!selectedEmployee) return;
-
-    if (!noteFormData.title) {
-      alert('Titel is verplicht');
-      return;
-    }
-
-    const newNote: EmployeeNote = {
-      id: `note-${Date.now()}`,
-      employeeId: selectedEmployee.id,
-      type: noteFormData.type,
-      title: noteFormData.title,
-      description: noteFormData.description,
-      date: noteFormData.date,
-      createdBy: currentUser!.id,
-      createdAt: new Date().toISOString(),
-    };
-
-    setEmployees(prev => prev.map(emp =>
-      emp.id === selectedEmployee.id
-        ? {
-            ...emp,
-            notes: [...(emp.notes || []), newNote],
-            updatedAt: new Date().toISOString(),
-          }
-        : emp
-    ));
-
-    // Update selected employee
-    setSelectedEmployee(prev => prev ? {
-      ...prev,
-      notes: [...(prev.notes || []), newNote],
-    } : null);
-
-    setShowNoteForm(false);
-    setNoteFormData({
-      type: 'general',
-      title: '',
-      description: '',
-      date: new Date().toISOString().split('T')[0],
-    });
-  };
-
-  const handleDeleteNote = (noteId: string) => {
-    if (!selectedEmployee) return;
-
-    if (!confirm('Weet je zeker dat je deze notitie wilt verwijderen?')) {
-      return;
-    }
-
-    setEmployees(prev => prev.map(emp =>
-      emp.id === selectedEmployee.id
-        ? {
-            ...emp,
-            notes: emp.notes?.filter(n => n.id !== noteId) || [],
-            updatedAt: new Date().toISOString(),
-          }
-        : emp
-    ));
-
-    // Update selected employee
-    setSelectedEmployee(prev => prev ? {
-      ...prev,
-      notes: prev.notes?.filter(n => n.id !== noteId) || [],
-    } : null);
-  };
+  // Notes hook (only initialized when employee is selected)
+  const notesHook = selectedEmployee
+    ? useEmployeeNotes(selectedEmployee.notes || [], selectedEmployee.id)
+    : null;
 
   // ============================================================================
   // RENDER HELPERS
   // ============================================================================
 
-  const getServiceYears = (hireDate?: string) => {
-    if (!hireDate) return 0;
-    const years = (new Date().getTime() - new Date(hireDate).getTime()) / (1000 * 60 * 60 * 24 * 365);
-    return Math.floor(years * 10) / 10; // Round to 1 decimal
-  };
-
-  const getNoteIcon = (type: EmployeeNote['type']) => {
-    const icons = {
-      late: '⏰',
-      absent: '❌',
-      milestone: '🎯',
-      performance: '📊',
-      warning: '⚠️',
-      compliment: '⭐',
-      attendance: '✅',
-      general: '📝',
+  const getAvailabilityBadge = (availability?: EmployeeAvailability) => {
+    const statusConfig: Record<EmployeeAvailability, { label: string; class: string }> = {
+      available: { label: 'Beschikbaar', class: 'bg-green-100 text-green-800' },
+      unavailable: { label: 'Niet beschikbaar', class: 'bg-yellow-100 text-yellow-800' },
+      vacation: { label: 'Met verlof', class: 'bg-blue-100 text-blue-800' },
     };
-    return icons[type];
+
+    const status = availability || 'available';
+    const config = statusConfig[status];
+
+    return (
+      <span className={`px-2 py-1 text-xs font-medium rounded ${config.class}`}>
+        {config.label}
+      </span>
+    );
   };
 
-  const getNoteTypeLabel = (type: EmployeeNote['type']) => {
-    const labels = {
-      late: 'Te laat',
-      absent: 'Afwezig',
-      milestone: 'Mijlpaal',
-      performance: 'Prestatie',
-      warning: 'Waarschuwing',
-      compliment: 'Compliment',
-      attendance: 'Aanwezigheid',
-      general: 'Algemeen',
-    };
-    return labels[type];
+  const handleAddNote = () => {
+    if (!selectedEmployee || !notesHook || !isAdmin) return;
+
+    if (!noteForm.title.trim()) {
+      alert('Titel is verplicht');
+      return;
+    }
+
+    notesHook.addNote({
+      type: noteForm.type,
+      date: noteForm.date,
+      title: noteForm.title,
+      description: noteForm.description,
+      createdBy: currentUser.id,
+    });
+
+    // Reset form
+    setNoteForm({
+      type: 'general',
+      date: new Date().toISOString().split('T')[0],
+      title: '',
+      description: '',
+    });
+    setShowAddNoteModal(false);
   };
 
-  const getStatusBadge = (status?: string) => {
-    if (!status || status === 'available') {
-      return <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">Beschikbaar</span>;
+  const handleDeleteNote = (noteId: string) => {
+    if (!notesHook || !isAdmin) return;
+
+    const confirmed = window.confirm('Weet je zeker dat je deze notitie wilt verwijderen?');
+    if (confirmed) {
+      notesHook.deleteNote(noteId);
     }
-    if (status === 'vacation') {
-      return <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">Met verlof</span>;
-    }
-    if (status === 'unavailable') {
-      return <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-semibold">Niet beschikbaar</span>;
-    }
-    return null;
   };
 
   // ============================================================================
-  // RENDER
+  // MAIN RENDER
   // ============================================================================
-
-  if (!currentUser) {
-    return (
-      <div className="p-6">
-        <p className="text-gray-600">Gelieve in te loggen om deze module te gebruiken.</p>
-      </div>
-    );
-  }
-
-  if (!currentUser.isAdmin) {
-    return (
-      <div className="p-6">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-yellow-800">Deze module is alleen toegankelijk voor administrators.</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="p-6">
-      {/* Header */}
+    <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">👤 HRM - Personeelsbeheer</h1>
-        <p className="text-gray-600 mt-1">Beheer medewerkers, verlof en persoonlijke dossiers</p>
+        <h1 className="text-3xl font-bold text-gray-900">👥 HRM - Personeelsbeheer</h1>
+        <p className="text-gray-600 mt-2">Beheer medewerkers, verlof en notities</p>
       </div>
 
-      {/* Statistics Cards */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-600 mb-1">Totaal Medewerkers</div>
-          <div className="text-3xl font-bold text-gray-900">{statistics.totalEmployees}</div>
-          <div className="text-sm text-gray-500 mt-1">{statistics.admins} admins</div>
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="text-sm text-gray-600">Totaal Medewerkers</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+          <div className="text-xs text-gray-500">{stats.roles} verschillende functies</div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-600 mb-1">Beschikbaar</div>
-          <div className="text-3xl font-bold text-green-600">{statistics.available}</div>
-          <div className="text-sm text-gray-500 mt-1">Momenteel actief</div>
+
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="text-sm text-gray-600">Gem. Diensttijd</div>
+          <div className="text-2xl font-bold text-blue-600">{stats.avgTenure} jaar</div>
+          <div className="text-xs text-gray-500">Gemiddelde</div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-600 mb-1">Met Verlof</div>
-          <div className="text-3xl font-bold text-blue-600">{statistics.onVacation}</div>
-          <div className="text-sm text-gray-500 mt-1">Afwezig</div>
+
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="text-sm text-gray-600">Beschikbaar</div>
+          <div className="text-2xl font-bold text-green-600">{stats.available}</div>
+          <div className="text-xs text-gray-500">Actief werkzaam</div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-600 mb-1">Gem. Diensttijd</div>
-          <div className="text-3xl font-bold text-purple-600">{statistics.avgServiceYears}</div>
-          <div className="text-sm text-gray-500 mt-1">jaren</div>
+
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="text-sm text-gray-600">Met Verlof</div>
+          <div className="text-2xl font-bold text-orange-600">{stats.onVacation}</div>
+          <div className="text-xs text-gray-500">{stats.unavailable} niet beschikbaar</div>
         </div>
       </div>
 
-      {/* Action Bar */}
-      <div className="mb-6 flex justify-between items-center">
-        <input
-          type="text"
-          placeholder="Zoek medewerkers..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        <button
-          onClick={handleCreateEmployee}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
-        >
-          + Nieuwe Medewerker
-        </button>
+      {/* Search & Filter Bar */}
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="flex items-center space-x-4">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => handleSearch(e.target.value)}
+            placeholder="Zoek medewerkers (naam, email, functie)..."
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          <select
+            value={filterAvailability}
+            onChange={(e) => setAvailabilityFilter(e.target.value as any)}
+            className="px-3 py-2 border border-gray-300 rounded-lg"
+          >
+            <option value="all">Alle statussen</option>
+            <option value="available">Beschikbaar</option>
+            <option value="unavailable">Niet beschikbaar</option>
+            <option value="vacation">Met verlof</option>
+          </select>
+
+          {searchTerm && (
+            <button
+              onClick={clearSearch}
+              className="px-3 py-2 text-gray-600 hover:text-gray-900"
+            >
+              ✗ Clear
+            </button>
+          )}
+
+          {isAdmin && (
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+              + Nieuwe Medewerker
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Employees Grid */}
-      {filteredEmployees.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <p className="text-gray-500">Geen medewerkers gevonden</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredEmployees.map(employee => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredEmployees.map((employee) => {
+          const enriched = enrichedEmployees.find((e) => e.id === employee.id);
+          const tenure = enriched?.tenure || 0;
+          const availableVacation = enriched?.availableVacation || 0;
+
+          return (
             <div
               key={employee.id}
-              className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer"
+              className="bg-white rounded-lg shadow p-4 border-2 border-gray-200 hover:border-blue-300 transition cursor-pointer"
               onClick={() => setSelectedEmployee(employee)}
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold text-lg">
-                    {employee.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <h3 className="font-semibold text-gray-900">{employee.name}</h3>
-                      {employee.isAdmin && <span className="text-lg">👑</span>}
-                    </div>
-                    {employee.jobTitle && (
-                      <p className="text-sm text-gray-600">{employee.jobTitle}</p>
-                    )}
-                  </div>
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 flex items-center">
+                    {employee.name}
+                    {employee.isAdmin && <span className="ml-2">👑</span>}
+                  </h3>
+                  <p className="text-sm text-gray-600">{employee.jobTitle || employee.role}</p>
                 </div>
+                {getAvailabilityBadge(employee.availability)}
               </div>
 
-              <div className="space-y-2 text-sm mb-4">
-                <div className="flex items-center text-gray-600">
-                  <span className="w-5">📧</span>
-                  <span className="ml-2">{employee.email}</span>
-                </div>
-                {employee.phone && (
-                  <div className="flex items-center text-gray-600">
-                    <span className="w-5">📞</span>
-                    <span className="ml-2">{employee.phone}</span>
-                  </div>
-                )}
+              <div className="space-y-1 text-sm mb-3">
+                <p className="text-gray-600 truncate">📧 {employee.email}</p>
+                {employee.phone && <p className="text-gray-600 truncate">📞 {employee.phone}</p>}
                 {employee.hireDate && (
-                  <div className="flex items-center text-gray-600">
-                    <span className="w-5">📅</span>
-                    <span className="ml-2">
-                      {getServiceYears(employee.hireDate)} jaar in dienst
-                    </span>
-                  </div>
+                  <p className="text-gray-600">📅 {tenure} jaar in dienst</p>
                 )}
               </div>
 
-              {/* Vacation Info */}
               {employee.vacationDays !== undefined && (
-                <div className="mb-4 p-3 bg-blue-50 rounded">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-600">Verlofdagen:</span>
-                    <span className="font-semibold">
-                      {(employee.vacationDays || 0) - (employee.vacationDaysUsed || 0)} / {employee.vacationDays}
+                <div className="pt-3 border-t border-gray-200">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-600">Verlof:</span>
+                    <span className="font-medium">
+                      {availableVacation} / {employee.vacationDays} dagen
                     </span>
                   </div>
-                  <div className="w-full bg-blue-200 rounded-full h-2">
+                  <div className="mt-1 w-full bg-gray-200 rounded-full h-2">
                     <div
                       className="bg-blue-600 h-2 rounded-full"
                       style={{
-                        width: `${((employee.vacationDays || 0) - (employee.vacationDaysUsed || 0)) / (employee.vacationDays || 1) * 100}%`
+                        width: `${Math.min(100, (availableVacation / (employee.vacationDays || 1)) * 100)}%`,
                       }}
                     />
                   </div>
                 </div>
               )}
 
-              {/* Status */}
-              <div className="mb-4">
-                {getStatusBadge(employee.status)}
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEditEmployee(employee);
-                  }}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
-                >
-                  Bewerken
-                </button>
-                {employee.id !== currentUser.id && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteEmployee(employee.id);
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
-                  >
-                    Verwijderen
-                  </button>
-                )}
-              </div>
+              {(employee.notes?.length || 0) > 0 && (
+                <div className="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500">
+                  {employee.notes!.length} notitie(s)
+                </div>
+              )}
             </div>
-          ))}
+          );
+        })}
+      </div>
+
+      {filteredEmployees.length === 0 && (
+        <div className="bg-white rounded-lg shadow p-12 text-center">
+          <span className="text-4xl mb-4 block">👥</span>
+          <p className="text-gray-600">
+            {searchTerm ? 'Geen medewerkers gevonden' : 'Nog geen medewerkers aangemaakt'}
+          </p>
         </div>
       )}
 
-      {/* Employee Form Modal */}
-      {showEmployeeForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="text-2xl font-bold mb-4">
-              {editingEmployee ? 'Medewerker Bewerken' : 'Nieuwe Medewerker'}
-            </h2>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Naam *
-                  </label>
-                  <input
-                    type="text"
-                    value={employeeFormData.name}
-                    onChange={(e) => setEmployeeFormData({...employeeFormData, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    value={employeeFormData.email}
-                    onChange={(e) => setEmployeeFormData({...employeeFormData, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Wachtwoord {!editingEmployee && '*'}
-                  {editingEmployee && <span className="text-xs text-gray-500"> (laat leeg om ongewijzigd te laten)</span>}
-                </label>
-                <input
-                  type="password"
-                  value={employeeFormData.password}
-                  onChange={(e) => setEmployeeFormData({...employeeFormData, password: e.target.value})}
-                  placeholder={editingEmployee ? 'Laat leeg voor geen wijziging' : 'Wachtwoord'}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Functie
-                  </label>
-                  <input
-                    type="text"
-                    value={employeeFormData.jobTitle}
-                    onChange={(e) => setEmployeeFormData({...employeeFormData, jobTitle: e.target.value})}
-                    placeholder="Bijv. Monteur, Manager"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Afdeling
-                  </label>
-                  <input
-                    type="text"
-                    value={employeeFormData.department}
-                    onChange={(e) => setEmployeeFormData({...employeeFormData, department: e.target.value})}
-                    placeholder="Bijv. Productie, Verkoop"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Telefoon
-                  </label>
-                  <input
-                    type="tel"
-                    value={employeeFormData.phone}
-                    onChange={(e) => setEmployeeFormData({...employeeFormData, phone: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Startdatum
-                  </label>
-                  <input
-                    type="date"
-                    value={employeeFormData.hireDate}
-                    onChange={(e) => setEmployeeFormData({...employeeFormData, hireDate: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Verlofdagen per jaar
-                </label>
-                <input
-                  type="number"
-                  value={employeeFormData.vacationDays}
-                  onChange={(e) => setEmployeeFormData({...employeeFormData, vacationDays: parseInt(e.target.value) || 25})}
-                  min="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="isAdmin"
-                  checked={employeeFormData.isAdmin}
-                  onChange={(e) => setEmployeeFormData({...employeeFormData, isAdmin: e.target.checked})}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <label htmlFor="isAdmin" className="text-sm font-medium text-gray-700 flex items-center space-x-2">
-                  <span>Admin rechten toekennen</span>
-                  <span className="text-lg">👑</span>
-                </label>
-              </div>
-            </div>
-
-            <div className="flex gap-2 justify-end mt-6">
-              <button
-                onClick={() => {
-                  setShowEmployeeForm(false);
-                  setEditingEmployee(null);
-                }}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Annuleren
-              </button>
-              <button
-                onClick={handleSaveEmployee}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Opslaan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Employee Detail Modal (Personal File) */}
+      {/* Employee Dossier Modal */}
       {selectedEmployee && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <div className="flex justify-between items-start mb-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
               <div>
-                <div className="flex items-center space-x-3 mb-2">
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedEmployee.name}</h2>
-                  {selectedEmployee.isAdmin && <span className="text-2xl">👑</span>}
-                </div>
-                {selectedEmployee.jobTitle && (
-                  <p className="text-gray-600">{selectedEmployee.jobTitle}</p>
-                )}
-                {selectedEmployee.department && (
-                  <p className="text-sm text-gray-500">{selectedEmployee.department}</p>
-                )}
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                  {selectedEmployee.name}
+                  {selectedEmployee.isAdmin && <span className="ml-2">👑</span>}
+                </h2>
+                <p className="text-gray-600">{selectedEmployee.jobTitle || selectedEmployee.role}</p>
               </div>
               <button
                 onClick={() => setSelectedEmployee(null)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 text-2xl"
               >
-                <span className="text-2xl">×</span>
+                ✕
               </button>
             </div>
 
-            {/* Employee Info */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-gray-900 mb-3">Contact & Dienst Informatie</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-600">Email:</span>
-                  <span className="ml-2 font-medium">{selectedEmployee.email}</span>
-                </div>
-                {selectedEmployee.phone && (
+            <div className="p-6 space-y-6">
+              {/* Personal Info */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-lg font-bold mb-3">Persoonlijke Gegevens</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                   <div>
-                    <span className="text-gray-600">Telefoon:</span>
-                    <span className="ml-2 font-medium">{selectedEmployee.phone}</span>
+                    <span className="text-gray-600">Email:</span>
+                    <span className="ml-2 font-medium">{selectedEmployee.email}</span>
                   </div>
-                )}
-                {selectedEmployee.hireDate && (
+                  {selectedEmployee.phone && (
+                    <div>
+                      <span className="text-gray-600">Telefoon:</span>
+                      <span className="ml-2 font-medium">{selectedEmployee.phone}</span>
+                    </div>
+                  )}
+                  {selectedEmployee.hireDate && (
+                    <>
+                      <div>
+                        <span className="text-gray-600">In dienst sinds:</span>
+                        <span className="ml-2 font-medium">
+                          {new Date(selectedEmployee.hireDate).toLocaleDateString('nl-NL')}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Diensttijd:</span>
+                        <span className="ml-2 font-medium">{calculateTenure(selectedEmployee.hireDate)} jaar</span>
+                      </div>
+                    </>
+                  )}
                   <div>
-                    <span className="text-gray-600">In dienst sinds:</span>
-                    <span className="ml-2 font-medium">
-                      {new Date(selectedEmployee.hireDate).toLocaleDateString('nl-NL')}
+                    <span className="text-gray-600">Status:</span>
+                    <span className="ml-2">{getAvailabilityBadge(selectedEmployee.availability)}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Rol:</span>
+                    <span className={`ml-2 font-medium ${selectedEmployee.isAdmin ? 'text-blue-600' : 'text-gray-900'}`}>
+                      {selectedEmployee.isAdmin ? 'Administrator' : 'Medewerker'}
                     </span>
                   </div>
+                </div>
+
+                {/* Vacation */}
+                {selectedEmployee.vacationDays !== undefined && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <h4 className="font-semibold mb-2">Verlof</h4>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Totaal dagen:</span>
+                        <span className="font-medium">{selectedEmployee.vacationDays} dagen</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Gebruikt:</span>
+                        <span className="font-medium">{selectedEmployee.vacationDaysUsed || 0} dagen</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Beschikbaar:</span>
+                        <span className="font-bold text-blue-600">
+                          {calculateAvailableVacation(selectedEmployee)} dagen
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full"
+                          style={{
+                            width: `${Math.min(100, (calculateAvailableVacation(selectedEmployee) / (selectedEmployee.vacationDays || 1)) * 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 )}
-                <div>
-                  <span className="text-gray-600">Diensttijd:</span>
-                  <span className="ml-2 font-medium">{getServiceYears(selectedEmployee.hireDate)} jaar</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Status:</span>
-                  <span className="ml-2">{getStatusBadge(selectedEmployee.status)}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Account type:</span>
-                  <span className="ml-2 font-medium">{selectedEmployee.isAdmin ? 'Administrator' : 'Medewerker'}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Vacation Info */}
-            <div className="bg-blue-50 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-gray-900 mb-3">Verlof Informatie</h3>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-600">Resterende verlofdagen:</span>
-                <span className="text-2xl font-bold text-blue-600">
-                  {(selectedEmployee.vacationDays || 0) - (selectedEmployee.vacationDaysUsed || 0)}
-                </span>
-              </div>
-              <div className="w-full bg-blue-200 rounded-full h-3 mb-2">
-                <div
-                  className="bg-blue-600 h-3 rounded-full"
-                  style={{
-                    width: `${((selectedEmployee.vacationDays || 0) - (selectedEmployee.vacationDaysUsed || 0)) / (selectedEmployee.vacationDays || 1) * 100}%`
-                  }}
-                />
-              </div>
-              <div className="flex justify-between text-xs text-gray-600">
-                <span>Gebruikt: {selectedEmployee.vacationDaysUsed || 0} dagen</span>
-                <span>Totaal: {selectedEmployee.vacationDays || 0} dagen</span>
-              </div>
-            </div>
-
-            {/* Notes Section */}
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-gray-900">Notities ({selectedEmployee.notes?.length || 0})</h3>
-                <button
-                  onClick={() => setShowNoteForm(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
-                >
-                  + Notitie Toevoegen
-                </button>
               </div>
 
-              {selectedEmployee.notes && selectedEmployee.notes.length > 0 ? (
+              {/* Notes Section */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold">Notities ({notesHook?.notes.length || 0})</h3>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setShowAddNoteModal(true)}
+                      className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+                    >
+                      + Notitie Toevoegen
+                    </button>
+                  )}
+                </div>
+
+                {/* Add Note Form */}
+                {showAddNoteModal && isAdmin && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <h4 className="font-semibold mb-3">Nieuwe Notitie</h4>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Type</label>
+                          <select
+                            value={noteForm.type}
+                            onChange={(e) => setNoteForm({ ...noteForm, type: e.target.value as EmployeeNoteType })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                          >
+                            <option value="general">📝 Algemeen</option>
+                            <option value="late">⏰ Te laat</option>
+                            <option value="absent">❌ Afwezig</option>
+                            <option value="milestone">🎯 Milestone</option>
+                            <option value="performance">📊 Prestatie</option>
+                            <option value="warning">⚠️ Waarschuwing</option>
+                            <option value="compliment">⭐ Compliment</option>
+                            <option value="attendance">✅ Aanwezigheid</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Datum</label>
+                          <input
+                            type="date"
+                            value={noteForm.date}
+                            onChange={(e) => setNoteForm({ ...noteForm, date: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Titel</label>
+                        <input
+                          type="text"
+                          value={noteForm.title}
+                          onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })}
+                          placeholder="Korte samenvatting..."
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Beschrijving</label>
+                        <textarea
+                          value={noteForm.description}
+                          onChange={(e) => setNoteForm({ ...noteForm, description: e.target.value })}
+                          placeholder="Uitgebreide details..."
+                          rows={3}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={handleAddNote}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        >
+                          Opslaan
+                        </button>
+                        <button
+                          onClick={() => setShowAddNoteModal(false)}
+                          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                        >
+                          Annuleer
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Notes List */}
                 <div className="space-y-3">
-                  {selectedEmployee.notes
-                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                    .map(note => (
+                  {notesHook && notesHook.notes.length > 0 ? (
+                    notesHook.notes.map((note) => (
                       <div key={note.id} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center space-x-2">
-                            <span className="text-2xl">{getNoteIcon(note.type)}</span>
+                            <span className="text-2xl">{notesHook.getNoteIcon(note.type)}</span>
                             <div>
                               <h4 className="font-semibold text-gray-900">{note.title}</h4>
-                              <span className="text-xs text-gray-500">
-                                {getNoteTypeLabel(note.type)} • {new Date(note.date).toLocaleDateString('nl-NL')}
-                              </span>
+                              <p className="text-xs text-gray-500">
+                                {notesHook.getNoteLabel(note.type)} •{' '}
+                                {new Date(note.date).toLocaleDateString('nl-NL')}
+                              </p>
                             </div>
                           </div>
-                          <button
-                            onClick={() => handleDeleteNote(note.id)}
-                            className="text-red-600 hover:text-red-700 text-sm"
-                          >
-                            Verwijderen
-                          </button>
+                          {isAdmin && (
+                            <button
+                              onClick={() => handleDeleteNote(note.id)}
+                              className="text-red-600 hover:text-red-800 text-sm"
+                            >
+                              Verwijder
+                            </button>
+                          )}
                         </div>
                         {note.description && (
                           <p className="text-sm text-gray-700 mt-2">{note.description}</p>
                         )}
+                        <p className="text-xs text-gray-400 mt-2">
+                          Toegevoegd op {new Date(note.createdAt).toLocaleString('nl-NL')}
+                        </p>
                       </div>
-                    ))}
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <span className="text-3xl mb-2 block">📝</span>
+                      <p className="text-sm">Nog geen notities toegevoegd</p>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <p className="text-sm text-gray-500 text-center py-8">Geen notities gevonden</p>
-              )}
-            </div>
-
-            <div className="mt-6 flex gap-2">
-              <button
-                onClick={() => {
-                  handleEditEmployee(selectedEmployee);
-                  setSelectedEmployee(null);
-                }}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-              >
-                Bewerken
-              </button>
-              <button
-                onClick={() => setSelectedEmployee(null)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Sluiten
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Note Form Modal */}
-      {showNoteForm && selectedEmployee && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-lg w-full p-6">
-            <h2 className="text-xl font-bold mb-4">Nieuwe Notitie</h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Type *
-                </label>
-                <select
-                  value={noteFormData.type}
-                  onChange={(e) => setNoteFormData({...noteFormData, type: e.target.value as EmployeeNote['type']})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="general">📝 Algemeen</option>
-                  <option value="late">⏰ Te laat</option>
-                  <option value="absent">❌ Afwezig</option>
-                  <option value="milestone">🎯 Mijlpaal</option>
-                  <option value="performance">📊 Prestatie</option>
-                  <option value="warning">⚠️ Waarschuwing</option>
-                  <option value="compliment">⭐ Compliment</option>
-                  <option value="attendance">✅ Aanwezigheid</option>
-                </select>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Titel *
-                </label>
-                <input
-                  type="text"
-                  value={noteFormData.title}
-                  onChange={(e) => setNoteFormData({...noteFormData, title: e.target.value})}
-                  placeholder="Korte beschrijving"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Datum
-                </label>
-                <input
-                  type="date"
-                  value={noteFormData.date}
-                  onChange={(e) => setNoteFormData({...noteFormData, date: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Beschrijving
-                </label>
-                <textarea
-                  value={noteFormData.description}
-                  onChange={(e) => setNoteFormData({...noteFormData, description: e.target.value})}
-                  rows={4}
-                  placeholder="Uitgebreide beschrijving (optioneel)"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2 justify-end mt-6">
-              <button
-                onClick={() => {
-                  setShowNoteForm(false);
-                  setNoteFormData({
-                    type: 'general',
-                    title: '',
-                    description: '',
-                    date: new Date().toISOString().split('T')[0],
-                  });
-                }}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Annuleren
-              </button>
-              <button
-                onClick={handleAddNote}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Toevoegen
-              </button>
             </div>
           </div>
         </div>
