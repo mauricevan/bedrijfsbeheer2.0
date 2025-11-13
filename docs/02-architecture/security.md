@@ -8,49 +8,129 @@ Het Bedrijfsbeheer Dashboard implementeert verschillende beveiligingslagen om ge
 
 ## Authenticatie Systeem
 
-### Login Mechanisme
+### ⚠️ **KRITIEKE VEILIGHEIDSWAARSCHUWING**
 
-Het systeem gebruikt een email en wachtwoord gebaseerde authenticatie:
+De huidige implementatie is **ALLEEN VOOR DEVELOPMENT/DEMO**. De onderstaande code voorbeelden zijn **ONVEILIG** en mogen **NOOIT** in productie gebruikt worden!
+
+---
+
+### ✅ **PRODUCTIE IMPLEMENTATIE** (VERPLICHT)
+
+**Gebruik ALTIJD gehashte wachtwoorden in productie:**
 
 ```typescript
+import bcrypt from 'bcrypt';
+
+// ✅ VEILIGE User interface voor productie
 interface User {
   id: string;
   name: string;
   email: string;
-  password: string;  // In productie: gehashed met bcrypt/argon2
+  passwordHash: string;      // ✅ Gehashed wachtwoord (NOOIT plain text!)
+  passwordSalt: string;       // ✅ Unieke salt per gebruiker
   role: 'admin' | 'user';
   department?: string;
   avatar?: string;
+  createdAt: string;
+  updatedAt: string;
 }
+
+// ✅ VEILIGE login functie voor productie
+const handleLogin = async (email: string, password: string) => {
+  try {
+    // 1. Zoek gebruiker in database
+    const user = await db.users.findOne({ email });
+
+    if (!user) {
+      // ⚠️ Geef geen specifieke foutmelding (security by obscurity)
+      setError('Ongeldige inloggegevens');
+      return;
+    }
+
+    // 2. Vergelijk wachtwoord met hash
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+
+    if (!isValidPassword) {
+      // ⚠️ Log failed attempt voor brute force detectie
+      await logFailedLoginAttempt(email);
+      setError('Ongeldige inloggegevens');
+      return;
+    }
+
+    // 3. Genereer JWT token
+    const token = generateJWT({
+      userId: user.id,
+      email: user.email,
+      role: user.role
+    });
+
+    // 4. Stel sessie in
+    localStorage.setItem('authToken', token);
+    setCurrentUser(user);
+    setIsLoggedIn(true);
+
+    // 5. Redirect naar dashboard
+    navigate('/dashboard');
+  } catch (error) {
+    console.error('Login error:', error);
+    setError('Er is een fout opgetreden. Probeer het opnieuw.');
+  }
+};
 ```
 
-#### Login Flow
+---
 
-1. **Gebruiker invoer** - Email en wachtwoord
-2. **Validatie** - Controleer of velden niet leeg zijn
-3. **Authenticatie** - Vergelijk credentials met database
-4. **Sessie creatie** - Stel currentUser state in
-5. **Redirect** - Navigeer naar dashboard
+### ❌ **DEVELOPMENT/DEMO IMPLEMENTATIE** (ONVEILIG!)
+
+> **⚠️ WAARSCHUWING:** De onderstaande code is **ALLEEN** voor development en demo doeleinden. **GEBRUIK DIT NOOIT IN PRODUCTIE!**
 
 ```typescript
-const handleLogin = (email: string, password: string) => {
-  // Zoek gebruiker in database
+// ❌ ONVEILIG - Alleen voor development/demo
+interface UserDev {
+  id: string;
+  name: string;
+  email: string;
+  password: string;  // ❌ Plain text wachtwoord - GEVAARLIJK!
+  role: 'admin' | 'user';
+}
+
+// ❌ ONVEILIG - Alleen voor development/demo
+const handleLoginDev = (email: string, password: string) => {
+  // ❌ Plain text password vergelijking - NOOIT DOEN IN PRODUCTIE!
   const user = users.find(u => u.email === email);
 
-  // Valideer credentials
   if (!user || user.password !== password) {
     setError('Ongeldige inloggegevens');
     return;
   }
 
-  // Stel sessie in
   setCurrentUser(user);
   setIsLoggedIn(true);
-
-  // Redirect naar dashboard
   navigate('/dashboard');
 };
 ```
+
+**Waarom is dit onveilig?**
+- ❌ Wachtwoorden in plain text opgeslagen
+- ❌ Geen bcrypt/argon2 hashing
+- ❌ Geen salt per gebruiker
+- ❌ Geen brute force protection
+- ❌ Geen rate limiting
+- ❌ Geen JWT tokens
+- ❌ Database dump lekt alle wachtwoorden
+
+---
+
+### Login Flow (Productie)
+
+1. **Gebruiker invoer** - Email en wachtwoord via HTTPS
+2. **Rate limiting** - Maximum 5 pogingen per 15 minuten
+3. **Validatie** - Controleer email format en wachtwoord lengte
+4. **Authenticatie** - Vergelijk met bcrypt hash
+5. **Token generatie** - Creëer JWT token (15min expiry)
+6. **Sessie creatie** - Stel token in localStorage
+7. **Redirect** - Navigeer naar dashboard
+8. **Audit log** - Log successful login
 
 ### Demo Accounts
 
