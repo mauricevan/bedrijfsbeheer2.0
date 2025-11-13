@@ -392,6 +392,18 @@ export interface Interaction {
 // 7. HRM MODULE (Personeelsbeheer)
 // ============================================================================
 
+export type EmployeeAvailability = 'available' | 'unavailable' | 'vacation';
+
+export type EmployeeNoteType =
+  | 'late' // ⏰ Te laat
+  | 'absent' // ❌ Afwezig
+  | 'milestone' // 🎯 Milestone
+  | 'performance' // 📊 Prestatie
+  | 'warning' // ⚠️ Waarschuwing
+  | 'compliment' // ⭐ Compliment
+  | 'attendance' // ✅ Aanwezigheid
+  | 'general'; // 📝 Algemeen
+
 export interface Employee extends User {
   // Extra employee fields
   jobTitle?: string;
@@ -403,6 +415,9 @@ export interface Employee extends User {
   vacationDays?: number;
   vacationDaysUsed?: number;
 
+  // Beschikbaarheid
+  availability?: EmployeeAvailability;
+
   // Notities
   notes?: EmployeeNote[];
 }
@@ -410,10 +425,13 @@ export interface Employee extends User {
 export interface EmployeeNote {
   id: string;
   employeeId: string;
-  type: 'general' | 'milestone' | 'warning' | 'late';
-  content: string;
-  createdBy: string;
+  type: EmployeeNoteType;
+  date: string; // Datum van de gebeurtenis
+  title: string; // Korte samenvatting
+  description: string; // Uitgebreide details
+  createdBy: string; // User ID van admin die notitie maakte
   createdAt: string;
+  updatedAt?: string;
 }
 
 // ============================================================================
