@@ -26,6 +26,9 @@ import {
 
 // Pages
 import { Login } from './pages/Login';
+import { Dashboard } from './pages/modules/Dashboard';
+import { Inventory } from './pages/modules/Inventory';
+import { WorkOrders } from './pages/modules/WorkOrders';
 import './App.css';
 
 /**
@@ -183,49 +186,39 @@ const App: React.FC = () => {
             <Route
               path="/dashboard"
               element={
-                <div className="text-center py-20">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                    Dashboard Module
-                  </h2>
-                  <p className="text-gray-600 mb-8">
-                    Deze module wordt binnenkort gebouwd met KPI cards en statistieken
-                  </p>
-                  <div className="inline-block bg-blue-50 text-blue-700 px-6 py-3 rounded-lg">
-                    🚧 In ontwikkeling...
-                  </div>
-                </div>
+                <Dashboard
+                  currentUser={currentUser}
+                  workOrders={workOrders}
+                  inventory={inventory}
+                  quotes={quotes}
+                  invoices={invoices}
+                  notifications={notifications}
+                />
               }
             />
             <Route
               path="/inventory"
               element={
-                <div className="text-center py-20">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                    Voorraadbeheer Module
-                  </h2>
-                  <p className="text-gray-600 mb-8">
-                    Deze module wordt binnenkort gebouwd
-                  </p>
-                  <div className="inline-block bg-blue-50 text-blue-700 px-6 py-3 rounded-lg">
-                    🚧 In ontwikkeling...
-                  </div>
-                </div>
+                <Inventory
+                  currentUser={currentUser}
+                  inventory={inventory}
+                  setInventory={setInventory}
+                  categories={categories}
+                  setCategories={setCategories}
+                />
               }
             />
             <Route
               path="/workorders"
               element={
-                <div className="text-center py-20">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                    Werkorders Module
-                  </h2>
-                  <p className="text-gray-600 mb-8">
-                    Kanban board met werkorders
-                  </p>
-                  <div className="inline-block bg-blue-50 text-blue-700 px-6 py-3 rounded-lg">
-                    🚧 In ontwikkeling...
-                  </div>
-                </div>
+                <WorkOrders
+                  currentUser={currentUser}
+                  workOrders={workOrders}
+                  setWorkOrders={setWorkOrders}
+                  users={users}
+                  customers={customers}
+                  inventory={inventory}
+                />
               }
             />
             <Route
