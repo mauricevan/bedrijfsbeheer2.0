@@ -3,11 +3,12 @@
  * Volledig accounting systeem met quotes en invoices
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import type { User, Quote, Invoice, Customer, InventoryItem } from '../../types';
+import { useQuotes, useInvoices } from '../../features/accounting';
 
 type AccountingPageProps = {
-  currentUser: User | null;
+  currentUser: User;
   initialQuotes: Quote[];
   initialInvoices: Invoice[];
   customers: Customer[];
@@ -23,67 +24,24 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
   customers,
   inventory,
 }) => {
-  // State
-  const [quotes, setQuotes] = useState<Quote[]>(initialQuotes);
-  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
+  const {
+    quotes,
+    stats: quoteStats,
+    updateQuoteStatus,
+    cloneQuote,
+  } = useQuotes(initialQuotes);
+
+  const {
+    invoices,
+    stats: invoiceStats,
+    updateInvoiceStatus,
+    markAsPaid,
+    cloneInvoice,
+  } = useInvoices(initialInvoices);
+
   const [activeTab, setActiveTab] = useState<Tab>('quotes');
 
-  // Statistieken
-  const quoteStats = useMemo(() => {
-    const total = quotes.length;
-    const draft = quotes.filter(q => q.status === 'draft').length;
-    const sent = quotes.filter(q => q.status === 'sent').length;
-    const approved = quotes.filter(q => q.status === 'approved').length;
-    const rejected = quotes.filter(q => q.status === 'rejected').length;
-    const expired = quotes.filter(q => q.status === 'expired').length;
-
-    const totalAmount = quotes.reduce((sum, q) => sum + q.total, 0);
-    const approvedAmount = quotes
-      .filter(q => q.status === 'approved')
-      .reduce((sum, q) => sum + q.total, 0);
-
-    return {
-      total,
-      draft,
-      sent,
-      approved,
-      rejected,
-      expired,
-      totalAmount,
-      approvedAmount,
-    };
-  }, [quotes]);
-
-  const invoiceStats = useMemo(() => {
-    const total = invoices.length;
-    const draft = invoices.filter(i => i.status === 'draft').length;
-    const sent = invoices.filter(i => i.status === 'sent').length;
-    const paid = invoices.filter(i => i.status === 'paid').length;
-    const overdue = invoices.filter(i => i.status === 'overdue').length;
-
-    const totalAmount = invoices.reduce((sum, i) => sum + i.total, 0);
-    const paidAmount = invoices
-      .filter(i => i.status === 'paid')
-      .reduce((sum, i) => sum + i.total, 0);
-    const outstandingAmount = invoices
-      .filter(i => ['sent', 'overdue'].includes(i.status))
-      .reduce((sum, i) => sum + i.total, 0);
-    const overdueAmount = invoices
-      .filter(i => i.status === 'overdue')
-      .reduce((sum, i) => sum + i.total, 0);
-
-    return {
-      total,
-      draft,
-      sent,
-      paid,
-      overdue,
-      totalAmount,
-      paidAmount,
-      outstandingAmount,
-      overdueAmount,
-    };
-  }, [invoices]);
+  const isAdmin = currentUser.isAdmin;
 
   // Render tab content
   const renderTabContent = () => {
@@ -93,7 +51,7 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
           <div className="space-y-6">
             {/* Statistieken Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-white rounded-lg shadow p-4">
+              <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-lg transition">
                 <div className="text-sm text-gray-600">Totaal Geoffreerd</div>
                 <div className="text-2xl font-bold text-gray-900">
                   €{quoteStats.totalAmount.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
@@ -101,7 +59,7 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
                 <div className="text-xs text-gray-500">{quoteStats.total} offertes</div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-4">
+              <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-lg transition">
                 <div className="text-sm text-gray-600">Geaccepteerd</div>
                 <div className="text-2xl font-bold text-green-600">
                   €{quoteStats.approvedAmount.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
@@ -109,7 +67,7 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
                 <div className="text-xs text-gray-500">{quoteStats.approved} offertes</div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-4">
+              <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-lg transition">
                 <div className="text-sm text-gray-600">Verzonden</div>
                 <div className="text-2xl font-bold text-blue-600">{quoteStats.sent}</div>
                 <div className="text-xs text-gray-500">Wacht op reactie</div>
@@ -130,7 +88,7 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-bold text-gray-900">Offertes</h2>
-                  {currentUser?.isAdmin && (
+                  {isAdmin && (
                     <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                       + Nieuwe Offerte
                     </button>
@@ -149,14 +107,14 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
                     {quotes.map((quote) => (
                       <div
                         key={quote.id}
-                        className={`p-4 rounded-lg border-2 ${
+                        className={`p-4 rounded-lg border-2 transition ${
                           quote.status === 'approved'
                             ? 'border-green-200 bg-green-50'
                             : quote.status === 'rejected'
                             ? 'border-red-200 bg-red-50'
                             : quote.status === 'expired'
                             ? 'border-gray-300 bg-gray-50'
-                            : 'border-gray-200 bg-white'
+                            : 'border-gray-200 bg-white hover:border-gray-300'
                         }`}
                       >
                         <div className="flex items-start justify-between">
@@ -213,11 +171,24 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
                                 Geldig tot: {new Date(quote.validUntil).toLocaleDateString('nl-NL')}
                               </p>
                             )}
+
+                            {quote.workOrderId && (
+                              <div className="mt-2 inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                                🔧 Gekoppeld aan werkorder
+                              </div>
+                            )}
                           </div>
 
                           <div className="flex items-center space-x-2">
-                            {currentUser?.isAdmin && (
+                            {isAdmin && (
                               <>
+                                <button
+                                  onClick={() => cloneQuote(quote.id)}
+                                  className="p-2 text-gray-600 hover:text-blue-600 transition"
+                                  title="Clone offerte"
+                                >
+                                  📋
+                                </button>
                                 <button className="p-2 text-gray-600 hover:text-blue-600 transition">
                                   ✏️
                                 </button>
@@ -249,7 +220,7 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
           <div className="space-y-6">
             {/* Statistieken Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-white rounded-lg shadow p-4">
+              <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-lg transition">
                 <div className="text-sm text-gray-600">Totaal Gefactureerd</div>
                 <div className="text-2xl font-bold text-gray-900">
                   €{invoiceStats.totalAmount.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
@@ -257,7 +228,7 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
                 <div className="text-xs text-gray-500">{invoiceStats.total} facturen</div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-4">
+              <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-lg transition">
                 <div className="text-sm text-gray-600">Betaald</div>
                 <div className="text-2xl font-bold text-green-600">
                   €{invoiceStats.paidAmount.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
@@ -265,7 +236,7 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
                 <div className="text-xs text-gray-500">{invoiceStats.paid} facturen</div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-4">
+              <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-lg transition">
                 <div className="text-sm text-gray-600">Uitstaand</div>
                 <div className="text-2xl font-bold text-blue-600">
                   €{invoiceStats.outstandingAmount.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
@@ -275,7 +246,7 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-4">
+              <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-lg transition">
                 <div className="text-sm text-gray-600">Verlopen</div>
                 <div className="text-2xl font-bold text-red-600">
                   €{invoiceStats.overdueAmount.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
@@ -291,7 +262,7 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-bold text-gray-900">Facturen</h2>
-                  {currentUser?.isAdmin && (
+                  {isAdmin && (
                     <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                       + Nieuwe Factuur
                     </button>
@@ -310,12 +281,12 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
                     {invoices.map((invoice) => (
                       <div
                         key={invoice.id}
-                        className={`p-4 rounded-lg border-2 ${
+                        className={`p-4 rounded-lg border-2 transition ${
                           invoice.status === 'paid'
                             ? 'border-green-200 bg-green-50'
                             : invoice.status === 'overdue'
                             ? 'border-red-300 bg-red-50'
-                            : 'border-gray-200 bg-white'
+                            : 'border-gray-200 bg-white hover:border-gray-300'
                         }`}
                       >
                         <div className="flex items-start justify-between">
@@ -370,16 +341,32 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
                                 ✓ Betaald op {new Date(invoice.paidDate).toLocaleDateString('nl-NL')}
                               </p>
                             )}
+
+                            {invoice.quoteId && (
+                              <div className="mt-2 inline-block px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">
+                                📄 Van offerte {invoice.quoteId}
+                              </div>
+                            )}
                           </div>
 
                           <div className="flex items-center space-x-2">
-                            {currentUser?.isAdmin && (
+                            {isAdmin && (
                               <>
+                                <button
+                                  onClick={() => cloneInvoice(invoice.id)}
+                                  className="p-2 text-gray-600 hover:text-blue-600 transition"
+                                  title="Clone factuur"
+                                >
+                                  📋
+                                </button>
                                 <button className="p-2 text-gray-600 hover:text-blue-600 transition">
                                   ✏️
                                 </button>
                                 {invoice.status !== 'paid' && (
-                                  <button className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition">
+                                  <button
+                                    onClick={() => markAsPaid(invoice.id)}
+                                    className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition"
+                                  >
                                     ✓ Markeer Betaald
                                   </button>
                                 )}
@@ -419,8 +406,8 @@ export const AccountingPage: React.FC<AccountingPageProps> = ({
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Boekhouding</h1>
-        <p className="text-gray-600">Offertes, facturen en boekhouding</p>
+        <h1 className="text-3xl font-bold text-gray-900">Boekhouding</h1>
+        <p className="text-gray-600 mt-2">Offertes, facturen en boekhouding</p>
       </div>
 
       {/* Tabs */}
