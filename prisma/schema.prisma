@@ -1,0 +1,319 @@
+// Bedrijfsbeheer Dashboard - Database Schema
+// PostgreSQL + Prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USER MANAGEMENT
+// ============================================================================
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  isAdmin      Boolean  @default(false) @map("is_admin")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  quotes           Quote[]
+  invoices         Invoice[]
+  workOrdersCreated WorkOrder[] @relation("CreatedWorkOrders")
+  workOrdersAssigned WorkOrder[] @relation("AssignedWorkOrders")
+  transactions     Transaction[]
+  notifications    Notification[]
+
+  @@map("users")
+}
+
+// ============================================================================
+// CUSTOMER MANAGEMENT (CRM)
+// ============================================================================
+
+model Customer {
+  id          String   @id @default(uuid())
+  name        String
+  email       String?
+  phone       String?
+  address     String?
+  city        String?
+  postalCode  String?  @map("postal_code")
+  country     String?  @default("Nederland")
+  vatNumber   String?  @map("vat_number")
+  notes       String?  @db.Text
+  status      String   @default("active") // active, inactive, lead
+  source      String?  // website, referral, cold_call, etc.
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  quotes      Quote[]
+  invoices    Invoice[]
+  workOrders  WorkOrder[]
+  interactions CustomerInteraction[]
+
+  @@index([email])
+  @@index([status])
+  @@map("customers")
+}
+
+model CustomerInteraction {
+  id          String   @id @default(uuid())
+  customerId  String   @map("customer_id")
+  type        String   // call, email, meeting, note
+  subject     String?
+  description String?  @db.Text
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([date])
+  @@map("customer_interactions")
+}
+
+// ============================================================================
+// INVENTORY MANAGEMENT
+// ============================================================================
+
+model InventoryItem {
+  id          String   @id @default(uuid())
+  sku         String   @unique
+  name        String
+  description String?  @db.Text
+  category    String?
+  quantity    Int      @default(0)
+  minStock    Int      @default(0) @map("min_stock")
+  maxStock    Int?     @map("max_stock")
+  unitPrice   Decimal  @db.Decimal(10, 2) @map("unit_price")
+  supplier    String?
+  location    String?
+  status      String   @default("active") // active, discontinued, out_of_stock
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  quoteItems     QuoteItem[]
+  invoiceItems   InvoiceItem[]
+  workOrderMaterials WorkOrderMaterial[]
+
+  @@index([sku])
+  @@index([category])
+  @@index([status])
+  @@map("inventory_items")
+}
+
+// ============================================================================
+// QUOTES (OFFERTES)
+// ============================================================================
+
+model Quote {
+  id          String   @id
+  customerId  String   @map("customer_id")
+  userId      String   @map("user_id")
+  status      String   @default("draft") // draft, sent, approved, rejected, expired
+  title       String?
+  description String?  @db.Text
+  validUntil  String?  @map("valid_until")
+  laborHours  Int?     @default(0) @map("labor_hours")
+  hourlyRate  Decimal  @default(50.00) @db.Decimal(10, 2) @map("hourly_rate")
+  subtotal    Decimal  @db.Decimal(10, 2)
+  vatRate     Decimal  @default(21.00) @db.Decimal(5, 2) @map("vat_rate")
+  vatAmount   Decimal  @db.Decimal(10, 2) @map("vat_amount")
+  total       Decimal  @db.Decimal(10, 2)
+  notes       String?  @db.Text
+  workOrderId String?  @unique @map("work_order_id")
+  invoiceId   String?  @unique @map("invoice_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user        User       @relation(fields: [userId], references: [id])
+  customer    Customer   @relation(fields: [customerId], references: [id])
+  items       QuoteItem[]
+  workOrder   WorkOrder? @relation("QuoteToWorkOrder")
+  invoice     Invoice?   @relation("QuoteToInvoice")
+
+  @@index([customerId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("quotes")
+}
+
+model QuoteItem {
+  id              String  @id @default(uuid())
+  quoteId         String  @map("quote_id")
+  inventoryItemId String? @map("inventory_item_id")
+  name            String
+  description     String?
+  quantity        Int
+  unitPrice       Decimal @db.Decimal(10, 2) @map("unit_price")
+  total           Decimal @db.Decimal(10, 2)
+
+  quote           Quote          @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+
+  @@index([quoteId])
+  @@map("quote_items")
+}
+
+// ============================================================================
+// WORK ORDERS (WERKORDERS)
+// ============================================================================
+
+model WorkOrder {
+  id             String    @id
+  title          String
+  description    String?   @db.Text
+  status         String    @default("todo") // todo, pending, in_progress, completed
+  priority       String?   @default("medium") // low, medium, high, urgent
+  assignedTo     String    @map("assigned_to")
+  assignedBy     String    @map("assigned_by")
+  customerId     String    @map("customer_id")
+  quoteId        String?   @unique @map("quote_id")
+  invoiceId      String?   @unique @map("invoice_id")
+  estimatedHours Int?      @map("estimated_hours")
+  actualHours    Int?      @default(0) @map("actual_hours")
+  startedAt      DateTime? @map("started_at")
+  completedAt    DateTime? @map("completed_at")
+  dueDate        DateTime? @map("due_date")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  assignedUser   User      @relation("AssignedWorkOrders", fields: [assignedTo], references: [id])
+  createdByUser  User      @relation("CreatedWorkOrders", fields: [assignedBy], references: [id])
+  customer       Customer  @relation(fields: [customerId], references: [id])
+  quote          Quote?    @relation("QuoteToWorkOrder", fields: [quoteId], references: [id])
+  invoice        Invoice?  @relation("WorkOrderToInvoice")
+  materials      WorkOrderMaterial[]
+
+  @@index([assignedTo])
+  @@index([status])
+  @@index([createdAt])
+  @@index([dueDate])
+  @@map("work_orders")
+}
+
+model WorkOrderMaterial {
+  id              String @id @default(uuid())
+  workOrderId     String @map("work_order_id")
+  inventoryItemId String @map("inventory_item_id")
+  quantity        Int
+
+  workOrder       WorkOrder     @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+
+  @@index([workOrderId])
+  @@map("work_order_materials")
+}
+
+// ============================================================================
+// INVOICES (FACTUREN)
+// ============================================================================
+
+model Invoice {
+  id          String   @id
+  customerId  String   @map("customer_id")
+  userId      String   @map("user_id")
+  quoteId     String?  @unique @map("quote_id")
+  workOrderId String?  @unique @map("work_order_id")
+  status      String   @default("draft") // draft, sent, paid, overdue, cancelled
+  date        String
+  dueDate     String   @map("due_date")
+  laborHours  Int?     @default(0) @map("labor_hours")
+  hourlyRate  Decimal  @default(50.00) @db.Decimal(10, 2) @map("hourly_rate")
+  subtotal    Decimal  @db.Decimal(10, 2)
+  vatRate     Decimal  @default(21.00) @db.Decimal(5, 2) @map("vat_rate")
+  vatAmount   Decimal  @db.Decimal(10, 2) @map("vat_amount")
+  total       Decimal  @db.Decimal(10, 2)
+  notes       String?  @db.Text
+  paidAt      DateTime? @map("paid_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user        User       @relation(fields: [userId], references: [id])
+  customer    Customer   @relation(fields: [customerId], references: [id])
+  quote       Quote?     @relation("QuoteToInvoice", fields: [quoteId], references: [id])
+  workOrder   WorkOrder? @relation("WorkOrderToInvoice", fields: [workOrderId], references: [id])
+  items       InvoiceItem[]
+  transactions Transaction[]
+
+  @@index([customerId])
+  @@index([userId])
+  @@index([status])
+  @@index([date])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id              String  @id @default(uuid())
+  invoiceId       String  @map("invoice_id")
+  inventoryItemId String? @map("inventory_item_id")
+  name            String
+  description     String?
+  quantity        Int
+  unitPrice       Decimal @db.Decimal(10, 2) @map("unit_price")
+  total           Decimal @db.Decimal(10, 2)
+
+  invoice         Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+
+  @@index([invoiceId])
+  @@map("invoice_items")
+}
+
+// ============================================================================
+// ACCOUNTING (BOEKHOUDING)
+// ============================================================================
+
+model Transaction {
+  id          String   @id @default(uuid())
+  type        String   // income, expense
+  category    String
+  description String
+  amount      Decimal  @db.Decimal(10, 2)
+  date        String
+  invoiceId   String?  @map("invoice_id")
+  userId      String   @map("user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user        User     @relation(fields: [userId], references: [id])
+  invoice     Invoice? @relation(fields: [invoiceId], references: [id])
+
+  @@index([type])
+  @@index([category])
+  @@index([date])
+  @@map("transactions")
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  type      String   // info, warning, error, success
+  title     String
+  message   String   @db.Text
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}

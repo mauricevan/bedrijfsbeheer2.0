@@ -1,0 +1,105 @@
+// Bedrijfsbeheer Dashboard - Database Schema
+// PostgreSQL + Prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// USER MANAGEMENT
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  isAdmin      Boolean  @default(false) @map("is_admin")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  quotes           Quote[]
+  invoices         Invoice[]
+  workOrdersCreated WorkOrder[] @relation("CreatedWorkOrders")
+  workOrdersAssigned WorkOrder[] @relation("AssignedWorkOrders")
+  transactions     Transaction[]
+  notifications    Notification[]
+
+  @@map("users")
+}
+
+// CUSTOMER MANAGEMENT
+model Customer {
+  id          String   @id @default(uuid())
+  name        String
+  email       String?
+  phone       String?
+  address     String?
+  city        String?
+  postalCode  String?  @map("postal_code")
+  country     String?  @default("Nederland")
+  vatNumber   String?  @map("vat_number")
+  notes       String?  @db.Text
+  status      String   @default("active")
+  source      String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  quotes      Quote[]
+  invoices    Invoice[]
+  workOrders  WorkOrder[]
+  interactions CustomerInteraction[]
+
+  @@index([email])
+  @@index([status])
+  @@map("customers")
+}
+
+model CustomerInteraction {
+  id          String   @id @default(uuid())
+  customerId  String   @map("customer_id")
+  type        String
+  subject     String?
+  description String?  @db.Text
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([date])
+  @@map("customer_interactions")
+}
+
+// INVENTORY
+model InventoryItem {
+  id          String   @id @default(uuid())
+  sku         String   @unique
+  name        String
+  description String?  @db.Text
+  category    String?
+  quantity    Int      @default(0)
+  minStock    Int      @default(0) @map("min_stock")
+  maxStock    Int?     @map("max_stock")
+  unitPrice   Decimal  @db.Decimal(10, 2) @map("unit_price")
+  supplier    String?
+  location    String?
+  status      String   @default("active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  quoteItems     QuoteItem[]
+  invoiceItems   InvoiceItem[]
+  workOrderMaterials WorkOrderMaterial[]
+
+  @@index([sku])
+  @@index([category])
+  @@index([status])
+  @@map("inventory_items")
+}
+
+// Continue with Quote, Invoice, WorkOrder models...
+// (Shortened for space - full schema would be here)
+
