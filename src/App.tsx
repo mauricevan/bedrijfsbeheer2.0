@@ -13,6 +13,7 @@ import { POSPage } from './pages/modules/POSPage';
 import { CRMPage } from './pages/modules/CRMPage';
 import { HRMPage, type Employee } from './pages/modules/HRMPage';
 import { PlanningPage, type CalendarEvent } from './pages/modules/PlanningPage';
+import { ReportsPage } from './pages/modules/ReportsPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -302,8 +303,19 @@ const App: React.FC = () => {
             />
           )}
 
+          {currentModule === 'reports' && (
+            <ReportsPage
+              currentUser={currentUser}
+              invoices={invoices}
+              transactions={transactions}
+              inventory={inventory}
+              quotes={quotes}
+              workOrders={workOrders}
+            />
+          )}
+
           {/* Placeholder voor andere modules */}
-          {!['dashboard', 'inventory', 'workorders', 'accounting', 'pos', 'crm', 'hrm', 'planning'].includes(
+          {!['dashboard', 'inventory', 'workorders', 'accounting', 'pos', 'crm', 'hrm', 'planning', 'reports'].includes(
             currentModule
           ) && (
             <div className="p-6 max-w-7xl mx-auto">
