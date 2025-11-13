@@ -11,6 +11,7 @@ import type {
   WorkOrder,
   Quote,
   Invoice,
+  Transaction,
   Lead,
   Notification,
   ModuleSettings,
@@ -260,7 +261,113 @@ export const initialQuotes: Quote[] = [
 // INVOICES (Facturen)
 // ============================================================================
 
-export const initialInvoices: Invoice[] = [];
+export const initialInvoices: Invoice[] = [
+  {
+    id: 'inv-1',
+    invoiceNumber: '2025-001',
+    customerId: 'cust-1',
+    customerName: 'ABC Producties',
+    items: [
+      {
+        id: 'ii-1',
+        inventoryItemId: 'inv-2',
+        description: 'LED Lamp 12V',
+        quantity: 20,
+        unitPrice: 12.50,
+        total: 250.00,
+        unit: 'stuk',
+      },
+    ],
+    laborHours: 8,
+    hourlyRate: 50,
+    subtotal: 650.00,
+    vatRate: 21,
+    vatAmount: 136.50,
+    total: 786.50,
+    status: 'sent',
+    date: '2025-01-15',
+    dueDate: '2025-01-29',
+    quoteId: 'quote-1',
+    workOrderId: 'wo-1',
+    notes: 'Betaling binnen 14 dagen',
+    createdBy: 'user-1',
+    createdAt: '2025-01-15T10:00:00.000Z',
+    updatedAt: '2025-01-15T10:00:00.000Z',
+  },
+  {
+    id: 'inv-2',
+    invoiceNumber: '2025-002',
+    customerId: 'cust-2',
+    customerName: 'TechBouw NL',
+    items: [
+      {
+        id: 'ii-2',
+        description: 'Installatiewerkzaamheden',
+        quantity: 1,
+        unitPrice: 1200.00,
+        total: 1200.00,
+      },
+    ],
+    laborHours: 16,
+    hourlyRate: 55,
+    subtotal: 2080.00,
+    vatRate: 21,
+    vatAmount: 436.80,
+    total: 2516.80,
+    status: 'paid',
+    date: '2025-01-10',
+    dueDate: '2025-01-24',
+    paidDate: '2025-01-20',
+    notes: 'Betaald per bank',
+    createdBy: 'user-1',
+    createdAt: '2025-01-10T09:00:00.000Z',
+    updatedAt: '2025-01-20T14:30:00.000Z',
+  },
+];
+
+// ============================================================================
+// TRANSACTIONS
+// ============================================================================
+
+export const initialTransactions: Transaction[] = [
+  {
+    id: 'trans-1',
+    type: 'income',
+    category: 'Verkoop',
+    amount: 2516.80,
+    description: 'Factuur 2025-002 - TechBouw NL',
+    date: '2025-01-20',
+    invoiceId: 'inv-2',
+    createdAt: '2025-01-20T14:30:00.000Z',
+  },
+  {
+    id: 'trans-2',
+    type: 'expense',
+    category: 'Inkoop',
+    amount: 450.00,
+    description: 'Voorraad aanvulling - BouwMaat BV',
+    date: '2025-01-18',
+    createdAt: '2025-01-18T10:00:00.000Z',
+  },
+  {
+    id: 'trans-3',
+    type: 'expense',
+    category: 'Kantoor',
+    amount: 125.50,
+    description: 'Kantoorbenodigdheden',
+    date: '2025-01-12',
+    createdAt: '2025-01-12T11:00:00.000Z',
+  },
+  {
+    id: 'trans-4',
+    type: 'income',
+    category: 'Verkoop',
+    amount: 850.00,
+    description: 'Kassa verkoop - particulier',
+    date: '2025-01-08',
+    createdAt: '2025-01-08T16:00:00.000Z',
+  },
+];
 
 // ============================================================================
 // LEADS

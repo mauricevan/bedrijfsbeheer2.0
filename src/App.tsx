@@ -8,6 +8,7 @@ import { LoginPage } from './components/auth';
 import { DashboardPage } from './pages/modules/DashboardPage';
 import { InventoryPage } from './pages/modules/InventoryPage';
 import { WorkOrdersPage } from './pages/modules/WorkOrdersPage';
+import { AccountingPage } from './pages/modules/AccountingPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -17,6 +18,7 @@ import {
   initialWorkOrders,
   initialQuotes,
   initialInvoices,
+  initialTransactions,
   initialLeads,
   initialNotifications,
   initialModuleSettings,
@@ -29,6 +31,7 @@ import type {
   WorkOrder,
   Quote,
   Invoice,
+  Transaction,
   Lead,
   Notification,
   ModuleSettings,
@@ -64,13 +67,12 @@ const App: React.FC = () => {
   // setCustomers, setLeads - used later in CRM module
 
   // WorkOrders
-  const [workOrders] = useState<WorkOrder[]>(initialWorkOrders);
-  // setWorkOrders - used later in WorkOrders module
+  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(initialWorkOrders);
 
   // Accounting
-  const [quotes] = useState<Quote[]>(initialQuotes);
-  const [invoices] = useState<Invoice[]>(initialInvoices);
-  // setQuotes, setInvoices - used later in Accounting module
+  const [quotes, setQuotes] = useState<Quote[]>(initialQuotes);
+  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
+  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
 
   // Notifications
   const [notifications] = useState<Notification[]>(initialNotifications);
@@ -223,16 +225,19 @@ const App: React.FC = () => {
           )}
 
           {currentModule === 'accounting' && currentUser.isAdmin && (
-            <div className="p-6 max-w-7xl mx-auto">
-              <div className="bg-white rounded-lg shadow p-8 text-center">
-                <span className="text-6xl mb-4 block">🧾</span>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Boekhouding</h2>
-                <p className="text-gray-600 mb-4">Module in ontwikkeling</p>
-                <p className="text-sm text-gray-500">
-                  {quotes.length} offertes, {invoices.length} facturen
-                </p>
-              </div>
-            </div>
+            <AccountingPage
+              currentUser={currentUser}
+              quotes={quotes}
+              setQuotes={setQuotes}
+              invoices={invoices}
+              setInvoices={setInvoices}
+              transactions={transactions}
+              setTransactions={setTransactions}
+              customers={customers}
+              inventory={inventory}
+              workOrders={workOrders}
+              setWorkOrders={setWorkOrders}
+            />
           )}
 
           {currentModule === 'crm' && (
