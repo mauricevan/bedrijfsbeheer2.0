@@ -15,6 +15,7 @@ import { HRMPage, type Employee } from './pages/modules/HRMPage';
 import { PlanningPage, type CalendarEvent } from './pages/modules/PlanningPage';
 import { ReportsPage } from './pages/modules/ReportsPage';
 import { WebshopPage, type WebshopProduct, type WebshopCategory, type WebshopOrder } from './pages/modules/WebshopPage';
+import { AdminSettingsPage } from './pages/modules/AdminSettingsPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -106,7 +107,7 @@ const App: React.FC = () => {
   // setNotifications - used later in Notifications module
 
   // Module Settings
-  const [moduleSettings] = useState<ModuleSettings[]>(initialModuleSettings);
+  const [moduleSettings, setModuleSettings] = useState<ModuleSettings[]>(initialModuleSettings);
 
   // UI State
   const [currentModule, setCurrentModule] = useState<string>('dashboard');
@@ -333,8 +334,16 @@ const App: React.FC = () => {
             />
           )}
 
+          {currentModule === 'admin' && currentUser?.isAdmin && (
+            <AdminSettingsPage
+              currentUser={currentUser}
+              moduleSettings={moduleSettings}
+              setModuleSettings={setModuleSettings}
+            />
+          )}
+
           {/* Placeholder voor andere modules */}
-          {!['dashboard', 'inventory', 'workorders', 'accounting', 'pos', 'crm', 'hrm', 'planning', 'reports', 'webshop'].includes(
+          {!['dashboard', 'inventory', 'workorders', 'accounting', 'pos', 'crm', 'hrm', 'planning', 'reports', 'webshop', 'admin'].includes(
             currentModule
           ) && (
             <div className="p-6 max-w-7xl mx-auto">
