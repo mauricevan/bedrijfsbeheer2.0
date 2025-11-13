@@ -1,2 +1,2 @@
-// Barrel file for accounting/hooks
-// Export all hooks from this module here
+// Barrel file for accounting hooks
+export * from './useAccounting';

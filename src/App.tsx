@@ -8,6 +8,7 @@ import { LoginPage } from './components/auth';
 import { DashboardPage } from './pages/modules/DashboardPage';
 import { InventoryPage } from './pages/modules/InventoryPage';
 import { WorkOrdersPage } from './pages/modules/WorkOrdersPage';
+import { AccountingPage } from './pages/modules/AccountingPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -223,16 +224,12 @@ const App: React.FC = () => {
           )}
 
           {currentModule === 'accounting' && currentUser.isAdmin && (
-            <div className="p-6 max-w-7xl mx-auto">
-              <div className="bg-white rounded-lg shadow p-8 text-center">
-                <span className="text-6xl mb-4 block">🧾</span>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Boekhouding</h2>
-                <p className="text-gray-600 mb-4">Module in ontwikkeling</p>
-                <p className="text-sm text-gray-500">
-                  {quotes.length} offertes, {invoices.length} facturen
-                </p>
-              </div>
-            </div>
+            <AccountingPage
+              currentUser={currentUser}
+              initialQuotes={quotes}
+              initialInvoices={invoices}
+              customers={customers}
+            />
           )}
 
           {currentModule === 'crm' && (
