@@ -12,6 +12,7 @@ import { AccountingPage } from './pages/modules/AccountingPage';
 import { POSPage } from './pages/modules/POSPage';
 import { CRMPage } from './pages/modules/CRMPage';
 import { HRMPage, type Employee } from './pages/modules/HRMPage';
+import { PlanningPage, type CalendarEvent } from './pages/modules/PlanningPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -73,6 +74,9 @@ const App: React.FC = () => {
       status: 'available' as const,
     }))
   );
+
+  // Planning - Calendar Events
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
 
   // Inventory
   const [inventory, setInventory] = useState<InventoryItem[]>(initialInventory);
@@ -288,8 +292,18 @@ const App: React.FC = () => {
             />
           )}
 
+          {currentModule === 'planning' && (
+            <PlanningPage
+              currentUser={currentUser}
+              events={events}
+              setEvents={setEvents}
+              employees={employees}
+              customers={customers}
+            />
+          )}
+
           {/* Placeholder voor andere modules */}
-          {!['dashboard', 'inventory', 'workorders', 'accounting', 'pos', 'crm', 'hrm'].includes(
+          {!['dashboard', 'inventory', 'workorders', 'accounting', 'pos', 'crm', 'hrm', 'planning'].includes(
             currentModule
           ) && (
             <div className="p-6 max-w-7xl mx-auto">
