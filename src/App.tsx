@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { LoginPage } from './components/auth';
 import { DashboardPage } from './pages/modules/DashboardPage';
+import { InventoryPage } from './pages/modules/InventoryPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -53,8 +54,8 @@ const App: React.FC = () => {
 
   // Inventory
   const [inventory] = useState<InventoryItem[]>(initialInventory);
-  const [_categories] = useState<Category[]>(initialCategories);
-  // setInventory, setCategories - used later in Inventory module
+  const [categories] = useState<Category[]>(initialCategories);
+  // setInventory, setCategories - state managed by useInventory hook in InventoryPage
 
   // Customers & CRM
   const [customers] = useState<Customer[]>(initialCustomers);
@@ -205,16 +206,11 @@ const App: React.FC = () => {
           )}
 
           {currentModule === 'inventory' && (
-            <div className="p-6 max-w-7xl mx-auto">
-              <div className="bg-white rounded-lg shadow p-8 text-center">
-                <span className="text-6xl mb-4 block">📦</span>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Voorraadbeheer</h2>
-                <p className="text-gray-600 mb-4">Module in ontwikkeling</p>
-                <p className="text-sm text-gray-500">
-                  {inventory.length} items in voorraad
-                </p>
-              </div>
-            </div>
+            <InventoryPage
+              currentUser={currentUser}
+              initialInventory={inventory}
+              initialCategories={categories}
+            />
           )}
 
           {currentModule === 'workorders' && (
