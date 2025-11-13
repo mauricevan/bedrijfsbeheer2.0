@@ -1,2 +1,6 @@
-// Barrel file for inventory/hooks
-// Export all hooks from this module here
+/**
+ * Inventory Hooks - Barrel File
+ * Export all inventory hooks
+ */
+
+export * from './useInventory';

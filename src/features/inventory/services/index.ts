@@ -1,2 +1,6 @@
-// Barrel file for inventory/services
-// Export all services from this module here
+/**
+ * Inventory Services - Barrel File
+ * Export all inventory services
+ */
+
+export * from './inventoryService';
