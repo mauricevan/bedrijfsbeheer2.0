@@ -1,2 +1,6 @@
-// Barrel file for hrm/services
-// Export all services from this module here
+/**
+ * HRM Services - Barrel File
+ * Export all services from HRM module
+ */
+
+export * from './hrmService';

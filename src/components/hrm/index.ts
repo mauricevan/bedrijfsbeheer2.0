@@ -1,2 +1,6 @@
-// Barrel file for hrm components
-// Export all components from this module here
+/**
+ * HRM Components - Barrel File
+ * Export all HRM components
+ */
+
+export * from './EmployeeCard';
