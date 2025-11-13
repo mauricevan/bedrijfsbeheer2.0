@@ -1,2 +1,2 @@
-// Barrel file for workorders/hooks
-// Export all hooks from this module here
+// Barrel file for workorders hooks
+export * from './useWorkOrders';
