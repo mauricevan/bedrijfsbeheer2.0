@@ -9,6 +9,7 @@ import { DashboardPage } from './pages/modules/DashboardPage';
 import { InventoryPage } from './pages/modules/InventoryPage';
 import { WorkOrdersPage } from './pages/modules/WorkOrdersPage';
 import { AccountingPage } from './pages/modules/AccountingPage';
+import { POSPage } from './pages/modules/POSPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -57,9 +58,8 @@ const App: React.FC = () => {
   const { currentUser, loginError, login, logout, checkStoredSession } = useAuth(users);
 
   // Inventory
-  const [inventory] = useState<InventoryItem[]>(initialInventory);
-  const [categories] = useState<Category[]>(initialCategories);
-  // setInventory, setCategories - state managed by useInventory hook in InventoryPage
+  const [inventory, setInventory] = useState<InventoryItem[]>(initialInventory);
+  const [categories, _setCategories] = useState<Category[]>(initialCategories);
 
   // Customers & CRM
   const [customers] = useState<Customer[]>(initialCustomers);
@@ -240,6 +240,18 @@ const App: React.FC = () => {
             />
           )}
 
+          {currentModule === 'pos' && (
+            <POSPage
+              currentUser={currentUser}
+              inventory={inventory}
+              setInventory={setInventory}
+              categories={categories}
+              customers={customers}
+              invoices={invoices}
+              setInvoices={setInvoices}
+            />
+          )}
+
           {currentModule === 'crm' && (
             <div className="p-6 max-w-7xl mx-auto">
               <div className="bg-white rounded-lg shadow p-8 text-center">
@@ -254,7 +266,7 @@ const App: React.FC = () => {
           )}
 
           {/* Placeholder voor andere modules */}
-          {!['dashboard', 'inventory', 'workorders', 'accounting', 'crm'].includes(
+          {!['dashboard', 'inventory', 'workorders', 'accounting', 'pos', 'crm'].includes(
             currentModule
           ) && (
             <div className="p-6 max-w-7xl mx-auto">
