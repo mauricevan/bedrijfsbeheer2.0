@@ -16,6 +16,24 @@ Dit is een moderne, responsive website gebouwd met React 19, TypeScript en Tailw
 - ✅ **SEO Optimized** - Meta tags en semantische HTML
 - ✅ **Performance** - Optimale build size en laadtijden
 
+## 🚀 Recent Progress
+
+### November 2025
+- ✅ **Accounting Module Foundation** (v6.0.0-alpha)
+  - FASE 1-3 van refactoring plan voltooid
+  - Features structuur opgezet (`src/features/accounting/`)
+  - Utilities en services geïmplementeerd
+  - **~2800+ lines** pure TypeScript business logic code
+  - **50+ utility functies** (helpers, calculations, validators, formatters, filters)
+  - **30+ service functies** (quote, invoice, transaction services)
+  - Type-safe met TypeScript strict mode
+  - Alle code is pure functions (geen React dependencies in utils/services)
+
+### Current Status
+- Frontend: Basis website + Accounting foundation ✅
+- Backend: Not implemented ❌
+- Database: No persistence ❌
+
 ## 📦 Tech Stack
 
 ### Frontend
