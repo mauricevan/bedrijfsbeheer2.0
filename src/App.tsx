@@ -252,7 +252,7 @@ const App: React.FC = () => {
           )}
 
           {currentModule === 'pos' && (
-            <POSPage currentUser={currentUser} inventory={inventory} />
+            <POSPage currentUser={currentUser} inventory={inventory} customers={customers} />
           )}
 
           {currentModule === 'planning' && (
