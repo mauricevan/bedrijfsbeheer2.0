@@ -1,2 +1,6 @@
-// Barrel file for workorders/services
-// Export all services from this module here
+/**
+ * WorkOrders Services - Barrel File
+ * Export all services from workorders module
+ */
+
+export * from './workOrderService';

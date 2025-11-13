@@ -111,15 +111,20 @@ export type WorkOrderStatus =
   | 'completed';
 
 export interface WorkOrderMaterial {
-  inventoryItemId: string;
+  id: string;
+  inventoryItemId?: string;  // Optional: link to inventory item
+  name: string;              // Material name
   quantity: number;
+  unit: string;              // e.g., 'stuk', 'liter', 'meter'
   unitPrice?: number;
 }
 
 export interface WorkOrder {
   id: string;
+  index?: number;           // Sequential number for ordering/priority
   title: string;
   description: string;
+  notes?: string;           // Additional notes
 
   // Toewijzing
   assignedTo: string;       // User ID

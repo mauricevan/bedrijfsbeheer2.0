@@ -1,2 +1,7 @@
-// Barrel file for workorders components
-// Export all components from this module here
+/**
+ * WorkOrders Components - Barrel File
+ * Export all workorders components
+ */
+
+export * from './WorkOrderCard';
+export * from './KanbanBoard';

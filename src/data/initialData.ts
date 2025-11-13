@@ -192,8 +192,11 @@ export const initialWorkOrders: WorkOrder[] = [
     actualHours: 4.5,
     materials: [
       {
+        id: 'mat-1',
         inventoryItemId: 'inv-2',
+        name: 'LED Paneel 60x60cm',
         quantity: 12,
+        unit: 'stuk',
         unitPrice: 12.50,
       },
     ],
