@@ -8,6 +8,13 @@ import { LoginPage } from './components/auth';
 import { DashboardPage } from './pages/modules/DashboardPage';
 import { InventoryPage } from './pages/modules/InventoryPage';
 import { WorkOrdersPage } from './pages/modules/WorkOrdersPage';
+import { AccountingPage } from './pages/modules/AccountingPage';
+import { CRMPage } from './pages/modules/CRMPage';
+import { HRMPage } from './pages/modules/HRMPage';
+import { POSPage } from './pages/modules/POSPage';
+import { PlanningPage } from './pages/modules/PlanningPage';
+import { ReportsPage } from './pages/modules/ReportsPage';
+import { AdminSettingsPage } from './pages/modules/AdminSettingsPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -223,33 +230,53 @@ const App: React.FC = () => {
           )}
 
           {currentModule === 'accounting' && currentUser.isAdmin && (
-            <div className="p-6 max-w-7xl mx-auto">
-              <div className="bg-white rounded-lg shadow p-8 text-center">
-                <span className="text-6xl mb-4 block">🧾</span>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Boekhouding</h2>
-                <p className="text-gray-600 mb-4">Module in ontwikkeling</p>
-                <p className="text-sm text-gray-500">
-                  {quotes.length} offertes, {invoices.length} facturen
-                </p>
-              </div>
-            </div>
+            <AccountingPage
+              currentUser={currentUser}
+              initialQuotes={quotes}
+              initialInvoices={invoices}
+              customers={customers}
+              inventory={inventory}
+            />
           )}
 
           {currentModule === 'crm' && (
-            <div className="p-6 max-w-7xl mx-auto">
-              <div className="bg-white rounded-lg shadow p-8 text-center">
-                <span className="text-6xl mb-4 block">👥</span>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">CRM</h2>
-                <p className="text-gray-600 mb-4">Module in ontwikkeling</p>
-                <p className="text-sm text-gray-500">
-                  {customers.length} klanten, {leads.length} leads
-                </p>
-              </div>
-            </div>
+            <CRMPage
+              currentUser={currentUser}
+              initialCustomers={customers}
+              initialLeads={leads}
+            />
           )}
 
-          {/* Placeholder voor andere modules */}
-          {!['dashboard', 'inventory', 'workorders', 'accounting', 'crm'].includes(
+          {currentModule === 'hrm' && currentUser.isAdmin && (
+            <HRMPage currentUser={currentUser} users={users} />
+          )}
+
+          {currentModule === 'pos' && (
+            <POSPage currentUser={currentUser} inventory={inventory} />
+          )}
+
+          {currentModule === 'planning' && (
+            <PlanningPage currentUser={currentUser} />
+          )}
+
+          {currentModule === 'reports' && (
+            <ReportsPage
+              currentUser={currentUser}
+              workOrders={workOrders}
+              invoices={invoices}
+              quotes={quotes}
+            />
+          )}
+
+          {currentModule === 'admin' && currentUser.isAdmin && (
+            <AdminSettingsPage
+              currentUser={currentUser}
+              moduleSettings={moduleSettings}
+            />
+          )}
+
+          {/* Placeholder voor overige modules */}
+          {!['dashboard', 'inventory', 'workorders', 'accounting', 'crm', 'hrm', 'pos', 'planning', 'reports', 'admin'].includes(
             currentModule
           ) && (
             <div className="p-6 max-w-7xl mx-auto">
