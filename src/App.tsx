@@ -11,6 +11,7 @@ import { WorkOrdersPage } from './pages/modules/WorkOrdersPage';
 import { AccountingPage } from './pages/modules/AccountingPage';
 import { CRMPage } from './pages/modules/CRMPage';
 import { HRMPage } from './pages/modules/HRMPage';
+import { POSPage } from './pages/modules/POSPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -57,9 +58,10 @@ const App: React.FC = () => {
   const { currentUser, loginError, login, logout, checkStoredSession } = useAuth(users);
 
   // Inventory
-  const [inventory] = useState<InventoryItem[]>(initialInventory);
+  const [inventory, setInventory] = useState<InventoryItem[]>(initialInventory);
   const [categories] = useState<Category[]>(initialCategories);
-  // setInventory, setCategories - state managed by useInventory hook in InventoryPage
+  // setCategories - state managed by useInventory hook in InventoryPage
+  // setInventory - now also used by POS module for stock updates
 
   // Customers & CRM
   const [customers] = useState<Customer[]>(initialCustomers);
@@ -72,8 +74,9 @@ const App: React.FC = () => {
 
   // Accounting
   const [quotes] = useState<Quote[]>(initialQuotes);
-  const [invoices] = useState<Invoice[]>(initialInvoices);
-  // setQuotes, setInvoices - used later in Accounting module
+  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
+  // setQuotes - used later in Accounting module
+  // setInvoices - used by Accounting and POS modules
 
   // Notifications
   const [notifications] = useState<Notification[]>(initialNotifications);
@@ -246,8 +249,19 @@ const App: React.FC = () => {
             <HRMPage currentUser={currentUser} users={users} />
           )}
 
+          {currentModule === 'pos' && (
+            <POSPage
+              currentUser={currentUser}
+              inventory={inventory}
+              setInventory={setInventory}
+              customers={customers}
+              invoices={invoices}
+              setInvoices={setInvoices}
+            />
+          )}
+
           {/* Placeholder voor andere modules */}
-          {!['dashboard', 'inventory', 'workorders', 'accounting', 'crm', 'hrm'].includes(
+          {!['dashboard', 'inventory', 'workorders', 'accounting', 'crm', 'hrm', 'pos'].includes(
             currentModule
           ) && (
             <div className="p-6 max-w-7xl mx-auto">

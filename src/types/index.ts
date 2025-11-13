@@ -249,6 +249,7 @@ export interface Invoice {
   date: string;             // Factuur datum
   dueDate: string;          // Betaal datum
   paidDate?: string;        // Betaald op datum
+  paymentMethod?: PaymentMethod; // Voor POS verkopen
 
   // Relaties
   quoteId?: string;
@@ -395,6 +396,16 @@ export interface EmployeeNote {
 // 8. POS MODULE (Kassasysteem)
 // ============================================================================
 
+export type PaymentMethod = 'cash' | 'pin' | 'ideal' | 'creditcard';
+
+export interface CartItem {
+  inventoryItemId: string;
+  inventoryItem: InventoryItem; // Full item reference for display
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
 export interface SaleItem {
   inventoryItemId: string;
   quantity: number;
@@ -415,7 +426,7 @@ export interface Sale {
   total: number;
 
   // Betaling
-  paymentMethod: 'cash' | 'card' | 'pin';
+  paymentMethod: PaymentMethod;
   amountPaid: number;
   change: number;
 

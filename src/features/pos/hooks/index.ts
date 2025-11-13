@@ -1,2 +1,2 @@
-// Barrel file for pos/hooks
-// Export all hooks from this module here
+// Barrel file for pos hooks
+export * from './usePOS';
