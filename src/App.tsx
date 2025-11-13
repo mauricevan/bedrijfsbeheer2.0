@@ -4,14 +4,13 @@ import type {
   User,
   Customer,
   InventoryItem,
-  InventoryCategory,
+  Category,
   WorkOrder,
   Quote,
   Invoice,
   Notification,
   Lead,
-  CalendarEvent,
-} from './types';
+} from './types/index';
 
 // Initial Data
 import {
@@ -64,7 +63,7 @@ const App: React.FC = () => {
 
   // Inventory
   const [inventory, setInventory] = useState<InventoryItem[]>(initialInventory);
-  const [categories, setCategories] = useState<InventoryCategory[]>(initialCategories);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
 
   // Workorders
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>(initialWorkOrders);
@@ -72,9 +71,6 @@ const App: React.FC = () => {
   // Accounting
   const [quotes, setQuotes] = useState<Quote[]>(initialQuotes);
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
-
-  // Planning
-  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
 
   // Notifications
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
