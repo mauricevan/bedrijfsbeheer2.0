@@ -10,6 +10,7 @@ import { InventoryPage } from './pages/modules/InventoryPage';
 import { WorkOrdersPage } from './pages/modules/WorkOrdersPage';
 import { AccountingPage } from './pages/modules/AccountingPage';
 import { CRMPage } from './pages/modules/CRMPage';
+import { HRMPage } from './pages/modules/HRMPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -241,8 +242,12 @@ const App: React.FC = () => {
             />
           )}
 
+          {currentModule === 'hrm' && currentUser.isAdmin && (
+            <HRMPage currentUser={currentUser} users={users} />
+          )}
+
           {/* Placeholder voor andere modules */}
-          {!['dashboard', 'inventory', 'workorders', 'accounting', 'crm'].includes(
+          {!['dashboard', 'inventory', 'workorders', 'accounting', 'crm', 'hrm'].includes(
             currentModule
           ) && (
             <div className="p-6 max-w-7xl mx-auto">

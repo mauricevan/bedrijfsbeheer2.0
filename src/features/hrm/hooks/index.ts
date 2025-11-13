@@ -1,2 +1,2 @@
-// Barrel file for hrm/hooks
-// Export all hooks from this module here
+// Barrel file for hrm hooks
+export * from './useHRM';
