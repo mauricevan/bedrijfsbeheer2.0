@@ -11,6 +11,7 @@ import { WorkOrdersPage } from './pages/modules/WorkOrdersPage';
 import { AccountingPage } from './pages/modules/AccountingPage';
 import { POSPage } from './pages/modules/POSPage';
 import { CRMPage } from './pages/modules/CRMPage';
+import { HRMPage, type Employee } from './pages/modules/HRMPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -57,6 +58,21 @@ const App: React.FC = () => {
   // Authentication
   const [users] = useState<User[]>(initialUsers);
   const { currentUser, loginError, login, logout, checkStoredSession } = useAuth(users);
+
+  // HRM - Employees (extends User with HR fields)
+  const [employees, setEmployees] = useState<Employee[]>(
+    initialUsers.map((user) => ({
+      ...user,
+      jobTitle: user.isAdmin ? 'Administrator' : 'Medewerker',
+      department: 'Algemeen',
+      hireDate: '2025-01-01',
+      phone: '',
+      vacationDays: 25,
+      vacationDaysUsed: 0,
+      notes: [],
+      status: 'available' as const,
+    }))
+  );
 
   // Inventory
   const [inventory, setInventory] = useState<InventoryItem[]>(initialInventory);
@@ -264,8 +280,16 @@ const App: React.FC = () => {
             />
           )}
 
+          {currentModule === 'hrm' && currentUser.isAdmin && (
+            <HRMPage
+              currentUser={currentUser}
+              employees={employees}
+              setEmployees={setEmployees}
+            />
+          )}
+
           {/* Placeholder voor andere modules */}
-          {!['dashboard', 'inventory', 'workorders', 'accounting', 'pos', 'crm'].includes(
+          {!['dashboard', 'inventory', 'workorders', 'accounting', 'pos', 'crm', 'hrm'].includes(
             currentModule
           ) && (
             <div className="p-6 max-w-7xl mx-auto">
