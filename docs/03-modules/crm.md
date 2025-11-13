@@ -240,6 +240,140 @@ Professioneel CRM systeem met leads tracking, 7-fase pipeline, klantbeheer, inte
 
 ---
 
+## 🐛 Troubleshooting
+
+### Probleem: Klanten worden niet opgeslagen
+
+**Symptomen:**
+- Knop "Opslaan" reageert niet
+- Klant formulier geeft errors
+- Klant verdwijnt na refresh
+
+**Oorzaak:**
+- Verplichte veld niet ingevuld (naam, email)
+- Email formaat is incorrect
+- Geen admin rechten
+- Database validatie fout
+
+**Oplossing:**
+1. Zorg dat alle verplichte velden ingevuld zijn
+2. Controleer email formaat (xxx@domein.nl)
+3. Ververs de pagina (F5)
+4. Check huidige rol in profiel - Admin rechten nodig
+5. Check browser console (F12) voor details
+
+---
+
+### Probleem: Dubbele klanten
+
+**Symptomen:**
+- Dezelfde klant verschijnt meerdere keren
+- Duplicaten in klantlijst
+- Facturen verdeeld over duplicaten
+
+**Oorzaak:**
+- Klant aangemaakt met iets ander gespeld naam
+- Email adres is iets ander (spatie, hoofdletter)
+- Conversie van leads maakte duplicate
+- Import van oude data
+
+**Oplossing:**
+1. Check klantlijst op vergelijkbare namen
+2. Merge duplicaten handmatig (verwijder duplicate, update referenties)
+3. Zorg voor consistent naamgeving
+4. Check email spelling exact
+5. Voer data cleanup uit
+
+---
+
+### Probleem: Email adressen verkeerd formaat
+
+**Symptomen:**
+- Email integratie werkt niet
+- Emails kunnen niet naar klant gesleept worden
+- Email validation faalt
+
+**Oorzaak:**
+- Email is niet valide (geen @)
+- Spaties in email adres
+- Speciale karakters
+- Typo in email adres
+
+**Oplossing:**
+1. Check email format: naam@domein.nl (geen spaties)
+2. Corrigeer typo's
+3. Verwijder spaties en speciale karakters
+4. Update klant met correct email
+5. Test email integratie opnieuw
+
+---
+
+### Veelvoorkomende Errors
+
+#### Error: "Invalid email format"
+**Oorzaak:** Email is niet correct formaat
+**Oplossing:** Zorg voor standaard email (xxx@domein.nl)
+
+#### Error: "Customer already exists"
+**Oorzaak:** Klant is al in systeem
+**Oplossing:** Controleer klantlijst op duplicate, merge indien nodig
+
+#### Error: "Permission denied"
+**Oorzaak:** Gebruiker heeft geen edit rechten
+**Oplossing:** Vraag admin voor editor rechten
+
+---
+
+### Pipeline Issues
+
+**Symptomen:** Leads kunnen niet verplaatst worden, status update faalt
+**Mogelijke oorzaken:**
+- Lead is vergrendeld
+- Database sync fout
+- Status workflow is verkeerd
+**Oplossingen:**
+1. Check lead status
+2. Volg correct pipeline flow (Nieuw → Gewonnen/Verloren)
+3. Ververs pagina
+
+---
+
+### Follow-up Herinnering Issues
+
+**Symptomen:** Herinneringen worden niet getoond, vervallen taken warning verdwijnt
+**Mogelijke oorzaken:**
+- Notificaties module is uit
+- Datum is incorrect ingesteld
+- Browser notifications disabled
+**Oplossingen:**
+1. Check Notificaties module is aan
+2. Controleer follow-up datum
+3. Allow browser notifications
+
+---
+
+### Email Import Issues
+
+**Symptomen:** Emails kunnen niet naar CRM gesleept worden
+**Mogelijke oorzaken:**
+- Email module niet enabled
+- Bestandstype is niet .eml
+- Email parsing failed
+**Oplossingen:**
+1. Check Modules → Email support enabled
+2. Zorg voor .eml bestanden
+3. Check email content is valide
+
+---
+
+### Tips voor Debugging
+
+1. **Open Browser Console** (F12) om errors te zien
+2. **Check Network Tab** voor API errors
+3. **Refresh de pagina** (F5) bij rare gedrag
+4. **Controleer email geldigheid** voor integratie issues
+5. **Test in Incognito Mode** om extensies uit te sluiten
+
 ## Gerelateerde Modules
 
 - [Accounting](./accounting.md) - Voor facturatie en betalingen

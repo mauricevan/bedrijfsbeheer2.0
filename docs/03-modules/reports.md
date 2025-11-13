@@ -202,6 +202,147 @@ De module biedt vier verschillende rapporten, elk met eigen focus en metrics.
 
 ---
 
+## 🐛 Troubleshooting
+
+### Probleem: Export naar PDF/Excel faalt
+
+**Symptomen:**
+- Export knop werkt niet
+- Download start niet
+- Bestand is leeg of corrupt
+- Error "Export failed"
+
+**Oorzaak:**
+- Export feature nog niet volledig geïmplementeerd
+- Browser blokkiert download
+- Backend service is offline
+- File format probleem
+
+**Oplossing:**
+1. Check of export beschikbaar is in deze versie
+2. Try in ander browser
+3. Check browser download instellingen
+4. Check browser console (F12) voor errors
+5. Controleer backend service status
+
+---
+
+### Probleem: Filters niet toegepast
+
+**Symptomen:**
+- Filter knop werkt niet
+- Geselecteerde filter wordt genegeerd
+- Data update niet na filter wijziging
+- Filters reset na pagina refresh
+
+**Oorzaak:**
+- Filter logic niet correct geïmplementeerd
+- Cache probleem
+- State management issue
+- Date picker bug
+
+**Oplossing:**
+1. Zorg alle filter velden zijn ingevuld
+2. Ververs pagina (F5)
+3. Clear browser cache (Ctrl+Shift+Delete)
+4. Probeer filters opnieuw
+5. Check browser console (F12) voor errors
+
+---
+
+### Probleem: Grafieken laden niet
+
+**Symptomen:**
+- Grafieken zijn leeg
+- Visualisaties laden niet
+- "Loading..." staat stil
+- Grafieken tonen foutmelding
+
+**Oorzaak:**
+- Chart library laadt niet
+- Data voor grafiek is fout/leeg
+- Browser script blokkering
+- Backend data query failed
+
+**Oplossing:**
+1. Ververs pagina (F5)
+2. Zorg dat data bestaat (check andere tabs)
+3. Clear browser cache (Ctrl+Shift+Delete)
+4. Disable ad-blockers/script blockers
+5. Check browser console (F12) voor errors
+
+---
+
+### Veelvoorkomende Errors
+
+#### Error: "No data available"
+**Oorzaak:** Periode bevat geen data
+**Oplossing:** Selecteer andere periode of check of transacties bestaan
+
+#### Error: "Invalid date range"
+**Oorzaak:** Start datum is na eind datum
+**Oplossing:** Selecteer correct datum bereik
+
+#### Error: "Calculation error"
+**Oorzaak:** Data bevat ongeldig formats
+**Oplossing:** Check data integriteit in bron modules
+
+---
+
+### KPI Card Issues
+
+**Symptomen:** KPI cards tonen foutieve getallen, totalen kloppen niet
+**Mogelijke oorzaken:**
+- Data sync vertraging
+- Berekening fout
+- Filter wordt niet meegenomen
+**Oplossingen:**
+1. Wacht een moment en refresh
+2. Check data in bron modules
+3. Controleer filters
+4. Ververs pagina
+
+---
+
+### Performance Issues
+
+**Symptomen:** Rapporten laden traag, lange wachttijd
+**Mogelijke oorzaken:**
+- Veel data in periode
+- Database query is traag
+- Browser resource tekort
+**Oplossingen:**
+1. Selecteer kleinere datum bereik
+2. Clear browser cache
+3. Close andere tabs
+4. Use later opnieuw
+5. Check internet verbinding
+
+---
+
+### Rapport Type Issues
+
+**Symptomen:** Specifiek rapport werkt niet
+**Mogelijke oorzaken:**
+- Report type data ontbreekt
+- Module is uitgeschakeld
+- Bron data is leeg
+**Oplossingen:**
+1. Check bron modules (POS, Werkorders, Accounting, etc.)
+2. Zorg module is ingeschakeld in Admin Settings
+3. Verifieer transacties bestaan voor periode
+4. Probeer ander rapport type
+
+---
+
+### Tips voor Debugging
+
+1. **Open Browser Console** (F12) om errors te zien
+2. **Check Network Tab** voor API errors
+3. **Refresh de pagina** (F5) bij rare gedrag
+4. **Controleer bron data** voor correctheid
+5. **Test in Incognito Mode** om extensies uit te sluiten
+
 ## Gerelateerde Modules
 
 - [Voorraadbeheer](./inventory.md) - Voor voorraad details

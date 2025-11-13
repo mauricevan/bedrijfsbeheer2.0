@@ -252,6 +252,145 @@ interface Notification {
 
 ---
 
+## 🐛 Troubleshooting
+
+### Probleem: Notificaties worden niet getoond
+
+**Symptomen:**
+- Notificatie badge toont geen nummers
+- Dropdown is leeg
+- Meldingen verschijnen niet
+- Notifications paneel op dashboard is blank
+
+**Oorzaak:**
+- Notificaties module is uitgeschakeld
+- Geen rechten om notificaties te zien
+- LocalStorage is vol/corrupt
+- Browser notifications disabled
+
+**Oplossing:**
+1. Check Admin Instellingen → Modules → Notificaties is ON
+2. Clear browser cache (Ctrl+Shift+Delete)
+3. Clear LocalStorage: F12 → Application → Clear Storage
+4. Allow browser notifications in settings
+5. Ververs pagina (F5)
+
+---
+
+### Probleem: Mark as read werkt niet
+
+**Symptomen:**
+- Notificatie blijft ongelezen na klik
+- Badge gaat niet weg
+- "Alles markeren als gelezen" knop doet niets
+
+**Oorzaak:**
+- JavaScript error
+- State management probleem
+- Database sync fout
+- Browser cache probleem
+
+**Oplossing:**
+1. Klik opnieuw op notificatie
+2. Probeer "Alles markeren" knop
+3. Ververs pagina (F5)
+4. Clear browser cache (Ctrl+Shift+Delete)
+5. Check browser console (F12) voor errors
+
+---
+
+### Probleem: Push notificaties werken niet
+
+**Symptomen:**
+- Geen desktop notifications
+- Push geluid werkt niet
+- Meldingen werden niet getoond als tab closed
+
+**Oorzaak:**
+- Browser push notifications disabled
+- Feature nog niet geïmplementeerd
+- Service worker probleem
+- OS permissions niet gegeven
+
+**Oplossing:**
+1. Allow push notifications in browser settings
+2. Check OS (Windows/Mac) permission settings
+3. Test op supported browser (Chrome, Firefox, Edge)
+4. Check Service Worker in Application → Service Workers
+5. Enable notifications in Advanced Settings
+
+---
+
+### Veelvoorkomende Errors
+
+#### Error: "Notification permission denied"
+**Oorzaak:** Gebruiker heeft push notifications geweigerd
+**Oplossing:** Allow notifications in browser settings en reset
+
+#### Error: "Failed to create notification"
+**Oorzaak:** Browser ondersteunt niet deze notificatie
+**Oplossing:** Update browser naar nieuwste versie
+
+#### Error: "Database sync error"
+**Oorzaak:** Kan status niet opslaan
+**Oplossing:** Check database connectie en try opnieuw
+
+---
+
+### Badge Counter Issues
+
+**Symptomen:** Badge toont verkeerde aantal, update niet
+**Mogelijke oorzaken:**
+- Cache is verouderd
+- State sync probleem
+- Unread count klopt niet
+**Oplossingen:**
+1. Refresh pagina (F5)
+2. Clear LocalStorage
+3. Mark all as read en unread again
+4. Check database logs
+
+---
+
+### Missing Notifications Issues
+
+**Symptomen:** Notificatie voor bepaald event verschijnt niet
+**Mogelijke oorzaken:**
+- Event notification feature nog niet implemented
+- User role heeft geen access
+- Trigger condition niet voldaan
+**Oplossingen:**
+1. Check of event notification in deze versie is
+2. Verify user role/permissions
+3. Zorg trigger condition is voldaan
+4. Check system event logs
+
+---
+
+### Performance Issues
+
+**Symptomen:** Notificaties laden traag, interface traag
+**Mogelijke oorzaken:**
+- Veel notificaties in list
+- Browser performance issue
+- Large localStorage
+**Oplossingen:**
+1. Mark old as read/delete
+2. Clear browser cache
+3. Close ander tabs
+4. Use modern browser
+5. Check internet speed
+
+---
+
+### Tips voor Debugging
+
+1. **Open Browser Console** (F12) om errors te zien
+2. **Check Network Tab** voor API errors
+3. **Refresh de pagina** (F5) bij rare gedrag
+4. **Clear LocalStorage** voor data issues
+5. **Test in Incognito Mode** om extensies uit te sluiten
+
 ## Gerelateerde Modules
 
 - [Dashboard](./dashboard.md) - Voor notificaties paneel

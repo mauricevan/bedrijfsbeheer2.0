@@ -354,6 +354,146 @@ Voor performance gerelateerde issues:
 
 ---
 
+## 🐛 Troubleshooting
+
+### Probleem: Settings niet opgeslagen
+
+**Symptomen:**
+- Save knop reageert niet
+- Wijzigingen worden niet bewaard
+- Settings reset na pagina refresh
+- Error "Save failed"
+
+**Oorzaak:**
+- Geen admin rechten
+- Verplichte veld niet ingevuld
+- Database connectie fout
+- Browser cache probleem
+
+**Oplossing:**
+1. Check huidige rol - Admin vereist
+2. Zorg alle verplichte velden ingevuld
+3. Ververs pagina (F5)
+4. Clear browser cache (Ctrl+Shift+Delete)
+5. Controleer database connectie
+
+---
+
+### Probleem: Import/export faalt
+
+**Symptomen:**
+- Import knop doet niets
+- Export werkt niet
+- Bestand is corrupt
+- Foutmelding "Import/Export failed"
+
+**Oorzaak:**
+- Import/Export feature nog niet geïmplementeerd
+- Bestandsformaat incorrect
+- Bestand is te groot
+- Backend service offline
+
+**Oplossing:**
+1. Check of functie beschikbaar is in deze versie
+2. Verifieer bestandsformaat (CSV/JSON)
+3. Zorg bestand < 10MB
+4. Controleer backend service
+5. Try met kleiner bestand
+
+---
+
+### Probleem: Demo data reset werkt niet
+
+**Symptomen:**
+- Reset knop werkt niet
+- Demo data wordt niet verwijderd
+- Error "Reset failed"
+- System hangt vast tijdens reset
+
+**Oorzaak:**
+- Geen admin rechten
+- Database is te groot
+- Backend timeout
+- Process wordt geïnterupt
+
+**Oplossing:**
+1. Check admin rechten
+2. Wacht langer voor reset (kan minuten duren)
+3. Probeer opnieuw
+4. Check database status
+5. Contact support als stuck
+
+---
+
+### Veelvoorkomende Errors
+
+#### Error: "Permission denied"
+**Oorzaak:** Gebruiker is geen admin
+**Oplossing:** Vraag admin deze acties uit te voeren
+
+#### Error: "Database connection failed"
+**Oorzaak:** Kan niet naar database connecten
+**Oplossing:** Check database connectie en credentials
+
+#### Error: "Module toggle failed"
+**Oorzaak:** Module kan niet uit/aan gezet worden
+**Oplossing:** Zorg module afhankelijkheden zijn ok, try opnieuw
+
+---
+
+### Module Beheer Issues
+
+**Symptomen:** Module toggle werkt niet, modules zijn gegrijd
+**Mogelijke oorzaken:**
+- Module dependencies
+- Admin toggle is stuck
+- Cache probleem
+**Oplossingen:**
+1. Zorg geen dependencies zijn
+2. Ververs pagina
+3. Clear browser cache
+4. Try toggle opnieuw
+
+---
+
+### Analytics Dashboard Issues
+
+**Symptomen:** Analytics data is leeg, grafieken laden niet
+**Mogelijke oorzaken:**
+- Geen events geregistreerd
+- Analytics module nog niet actief
+- Data sync vertraging
+**Oplossingen:**
+1. Zorg gebruikers system gebruiken (events worden geregistreerd)
+2. Wacht 24 uur voor sufficient data
+3. Check analytics is enabled
+4. Refresh pagina
+
+---
+
+### Database Diagnostics Issues
+
+**Symptomen:** Diagnostics tonen geen resultaten, testen falen
+**Mogelijke oorzaken:**
+- Database is ok (geen issues)
+- Diagnostics nog niet gekoppeld aan echte database
+- Connection timeout
+**Oplossingen:**
+1. Controleer echte database status
+2. Run handmatige tests
+3. Check network connectivity
+4. Review logs voor real issues
+
+---
+
+### Tips voor Debugging
+
+1. **Open Browser Console** (F12) om errors te zien
+2. **Check Network Tab** voor API errors
+3. **Refresh de pagina** (F5) bij rare gedrag
+4. **Check database status** voor connection issues
+5. **Test in Incognito Mode** om extensies uit te sluiten
+
 ## Gerelateerde Modules
 
 Alle modules - Admin Instellingen beïnvloedt alle andere modules

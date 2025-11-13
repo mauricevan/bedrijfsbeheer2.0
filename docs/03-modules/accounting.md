@@ -470,6 +470,140 @@ Volledig Digitaal Boekhouddossier - Alles wat een boekhouder nodig heeft.
 
 ---
 
+## 🐛 Troubleshooting
+
+### Probleem: Offerte → Factuur conversie faalt
+
+**Symptomen:**
+- Knop "Omzetten naar Factuur" is grijs/disabled
+- Conversion werkt niet
+- Foutmelding bij conversie
+
+**Oorzaak:**
+- Offerte status is niet "approved" of "sent"
+- Offerte items zijn verwijderd
+- Database synchronisatie fout
+- Geen admin rechten
+
+**Oplossing:**
+1. Check offerte status - moet "Approved" of "Sent" zijn
+2. Zorg dat offerte minstens één item heeft
+3. Ververs de pagina (F5)
+4. Check huidige rol in profiel - Admin rechten vereist
+5. Try conversion opnieuw
+
+---
+
+### Probleem: Bedragen kloppen niet
+
+**Symptomen:**
+- Subtotaal is incorrect
+- BTW bedrag klopt niet
+- Totaalbedrag is fout
+- Totalen updaten niet automatisch
+
+**Oorzaak:**
+- Verkeerde BTW percentage ingesteld
+- Prijs formaat probleem (komma vs punt)
+- Afrondingsverschillen
+- Cache niet vernieuwd
+
+**Oplossing:**
+1. Check BTW percentage (default 21%)
+2. Zorg dat prijzen correct formaat hebben (XX.XX)
+3. Ververs de pagina (F5)
+4. Clear browser cache (Ctrl+Shift+Delete)
+5. Check database berekeningen manueel
+
+---
+
+### Probleem: PDF export werkt niet
+
+**Symptomen:**
+- PDF download button werkt niet
+- Download start niet
+- PDF is leeg of corrupt
+- Error "Export failed"
+
+**Oorzaak:**
+- PDF generator niet geconfigureerd
+- Ondersteuning nog niet voledig geïmplementeerd
+- Browser blokkiert download
+- Backend service is offline
+
+**Oplossing:**
+1. Check of PDF functie beschikbaar is in versie
+2. Try in ander browser
+3. Check browser download settings
+4. Check browser console (F12) voor errors
+5. Controleer backend service in Admin Settings
+
+---
+
+### Veelvoorkomende Errors
+
+#### Error: "Cannot convert - invoice already exists"
+**Oorzaak:** Offerte is al naar factuur geconverteerd
+**Oplossing:** Check of duplicate factuur niet al bestaat
+
+#### Error: "Invalid item - not in inventory"
+**Oorzaak:** Item bestaat niet meer in voorraad
+**Oplossing:** Voeg item handmatig toe of kies ander item
+
+#### Error: "Calculation error"
+**Oorzaak:** Prijs bevat ongeldig karakter
+**Oplossing:** Controleer alle prijzen zijn getallen
+
+---
+
+### Status Workflow Issues
+
+**Symptomen:** Status kan niet veranderd worden, workflow buttons werken niet
+**Mogelijke oorzaken:**
+- Status is al op eindstatus
+- Offerte is vergrendeld
+- Geen rechten
+**Oplossingen:**
+1. Check huidige status
+2. Volg correct workflow (draft → sent → approved/rejected)
+3. Check admin rechten
+
+---
+
+### Werkorder Conversie Issues
+
+**Symptomen:** "Omzetten naar werkorder" knop doet niets
+**Oorzaak:**
+- Offerte/factuur status niet geschikt
+- Geen medewerkers beschikbaar
+- Database fout
+**Oplossing:**
+1. Check offerte/factuur status
+2. Zorg dat medewerkers aangemaakt zijn in HRM
+3. Ververs pagina en try opnieuw
+
+---
+
+### Email Integratie Issues
+
+**Symptomen:** Emails kunnen niet naar offertes gesleept worden
+**Mogelijke oorzaken:**
+- Email module niet geactiveerd
+- Verkeerde bestandstype
+**Oplossingen:**
+1. Check Admin Settings → Modules zijn Email enabled
+2. Zorg dat .eml bestanden gebruikt worden
+
+---
+
+### Tips voor Debugging
+
+1. **Open Browser Console** (F12) om errors te zien
+2. **Check Network Tab** voor API errors
+3. **Refresh de pagina** (F5) bij rare gedrag
+4. **Controleer berekeningen** voor bedrag issues
+5. **Test in Incognito Mode** om extensies uit te sluiten
+
 ## Gerelateerde Modules
 
 - [Werkorders](./workorders.md) - Voor werkorder conversie
