@@ -1,2 +1,2 @@
-// Barrel file for crm/hooks
-// Export all hooks from this module here
+// Barrel file for crm hooks
+export * from './useCRM';
