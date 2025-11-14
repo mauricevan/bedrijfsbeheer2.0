@@ -1,0 +1,15 @@
+# Dependencies
+node_modules
+dist
+build
+coverage
+
+# Generated files
+*.log
+package-lock.json
+.DS_Store
+
+# Config files
+.env
+.env.*
+!.env.example
