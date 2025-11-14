@@ -33,8 +33,8 @@ export function getMonthCalendar(year: number, month: number, events: Event[]): 
       isWeekend: currentDate.getDay() === 0 || currentDate.getDay() === 6,
       isCurrentMonth: currentDate.getMonth() === month,
     });
-    
-    currentDate.setDate(currentDate.setDate() + 1);
+
+    currentDate.setDate(currentDate.getDate() + 1);
   }
   
   return days;

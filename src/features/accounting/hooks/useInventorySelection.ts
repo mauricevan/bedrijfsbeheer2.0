@@ -16,8 +16,8 @@ export const useInventorySelection = (inventory: InventoryItem[]) => {
   const allCategories = useMemo(() => {
     const categoriesSet = new Set<string>();
     inventory.forEach(item => {
-      if (item.category) {
-        categoriesSet.add(item.category);
+      if (item.categoryId) {
+        categoriesSet.add(item.categoryId);
       }
     });
     return Array.from(categoriesSet).sort();
@@ -39,7 +39,7 @@ export const useInventorySelection = (inventory: InventoryItem[]) => {
 
     // Filter by category
     if (inventoryCategoryFilter !== 'all') {
-      filtered = filtered.filter(item => item.category === inventoryCategoryFilter);
+      filtered = filtered.filter(item => item.categoryId === inventoryCategoryFilter);
     }
 
     // Filter by search term
@@ -48,8 +48,9 @@ export const useInventorySelection = (inventory: InventoryItem[]) => {
       filtered = filtered.filter(
         item =>
           item.name.toLowerCase().includes(searchLower) ||
-          (item.description && item.description.toLowerCase().includes(searchLower)) ||
-          (item.sku && item.sku.toLowerCase().includes(searchLower))
+          (item.skuAutomatic && item.skuAutomatic.toLowerCase().includes(searchLower)) ||
+          (item.skuSupplier && item.skuSupplier.toLowerCase().includes(searchLower)) ||
+          (item.skuCustom && item.skuCustom.toLowerCase().includes(searchLower))
       );
     }
 

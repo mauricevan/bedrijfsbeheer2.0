@@ -4,23 +4,11 @@
  */
 
 import React from 'react';
-
-interface MonthlyRevenueData {
-  month: string;
-  revenue: number;
-  invoiceCount: number;
-}
-
-interface OutstandingByCustomerData {
-  customerId: string;
-  customerName: string;
-  amount: number;
-  invoiceCount: number;
-}
+import type { MonthlyRevenue, OutstandingByCustomer } from '../../../features/accounting/types/accounting.types';
 
 interface DashboardChartsProps {
-  monthlyRevenue: MonthlyRevenueData[];
-  outstandingByCustomer: OutstandingByCustomerData[];
+  monthlyRevenue: MonthlyRevenue[];
+  outstandingByCustomer: OutstandingByCustomer[];
 }
 
 export const DashboardCharts: React.FC<DashboardChartsProps> = ({
@@ -46,8 +34,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
             <div key={index} className="flex justify-between items-center">
               <span className="text-sm text-gray-600">{data.month}</span>
               <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-500">{data.invoiceCount} facturen</span>
-                <span className="text-sm font-medium text-gray-900">{formatCurrency(data.revenue)}</span>
+                <span className="text-sm text-gray-500">Inkomsten: {formatCurrency(data.income)}</span>
+                <span className="text-sm font-medium text-gray-900">Winst: {formatCurrency(data.profit)}</span>
               </div>
             </div>
           ))}

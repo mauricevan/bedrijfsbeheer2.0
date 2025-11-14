@@ -20,7 +20,6 @@ const createEmptyInvoiceForm = (): InvoiceFormData => ({
   date: new Date().toISOString().split('T')[0],
   dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // +30 days
   notes: '',
-  createdBy: '',
 });
 
 export const useInvoiceForm = (initialInvoice?: Invoice) => {
@@ -36,7 +35,6 @@ export const useInvoiceForm = (initialInvoice?: Invoice) => {
         date: initialInvoice.date,
         dueDate: initialInvoice.dueDate,
         notes: initialInvoice.notes || '',
-        createdBy: initialInvoice.createdBy,
       }
     : createEmptyInvoiceForm();
 
@@ -52,8 +50,8 @@ export const useInvoiceForm = (initialInvoice?: Invoice) => {
       id: `item-${Date.now()}-${Math.random()}`,
       description: inventoryItem.name,
       quantity,
-      unitPrice: inventoryItem.price,
-      total: calculateInvoiceItemTotal(quantity, inventoryItem.price),
+      unitPrice: inventoryItem.unitPrice,
+      total: calculateInvoiceItemTotal(quantity, inventoryItem.unitPrice),
       inventoryItemId: inventoryItem.id,
     };
 

@@ -103,7 +103,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
           <option value="">+ Voeg item toe uit voorraad...</option>
           {inventory.map(item => (
             <option key={item.id} value={item.id}>
-              {item.name} - {formatCurrency(item.price)}
+              {item.name} - {formatCurrency(item.unitPrice)}
             </option>
           ))}
         </select>
