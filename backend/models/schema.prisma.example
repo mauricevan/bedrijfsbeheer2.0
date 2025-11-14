@@ -1,0 +1,94 @@
+// BTD Beveiliging Database Schema
+// Dit is een voorbeeld schema voor toekomstige implementatie
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Services model
+model Service {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  icon        String
+  slug        String   @unique
+  order       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("services")
+}
+
+// Products model
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  features    String[] // Array van features
+  image       String?
+  isFeatured  Boolean  @default(false) @map("is_featured")
+  order       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("products")
+}
+
+// Lock System Platforms model
+model Platform {
+  id          String   @id @default(uuid())
+  name        String
+  type        String   // 'budget', 'mid-range', 'premium'
+  description String
+  features    String[] // Array van features
+  order       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("platforms")
+}
+
+// Brands model
+model Brand {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  logo      String?
+  website   String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("brands")
+}
+
+// Contact Submissions model
+model ContactSubmission {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  message   String
+  status    String   @default("new") // 'new', 'read', 'replied', 'archived'
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("contact_submissions")
+}
+
+// Users model (voor toekomstig admin panel)
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  isAdmin      Boolean  @default(false) @map("is_admin")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}

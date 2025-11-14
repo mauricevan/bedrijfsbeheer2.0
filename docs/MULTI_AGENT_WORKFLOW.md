@@ -1,8 +1,32 @@
 # Multi-Agent Workflow Guide 🤖🤖🤖
 
 **Voor:** AI Agents die samenwerken aan het Bedrijfsbeheer Dashboard
-**Versie:** 1.0.0
-**Laatst bijgewerkt:** Januari 2025
+**Versie:** 1.1.0
+**Laatst bijgewerkt:** 13 November 2025
+
+---
+
+## 🚨 URGENT: READ FIRST!
+
+**⚠️ BEFORE YOU START: Check coordination status!**
+
+```bash
+# ALWAYS run this FIRST:
+cat docs/AGENT_COORDINATION_STATUS.md
+cat .agent-lock.json
+```
+
+**Current Status (13 Nov 2025):**
+- ⚠️ **2 Conflicts Detected** (Inventory duplicate, App.tsx violations)
+- ⚠️ **Integration Agent Required** (App.tsx consolidation needed)
+- ✅ **4/12 Modules Completed** (Inventory, WorkOrders, Accounting, Dashboard partial)
+- 📋 **8 Modules Available** (CRM, HRM, POS, Planning, Reports, Webshop, Notifications, Admin)
+
+**Critical Rules:**
+1. ❌ **NEVER modify src/App.tsx** (Integration Agent ONLY!)
+2. ❌ **NEVER modify src/types/index.ts** (Architecture Agent ONLY!)
+3. ❌ **CHECK if module already exists before starting!**
+4. ✅ **UPDATE .agent-lock.json after your work**
 
 ---
 

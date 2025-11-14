@@ -1,8 +1,9 @@
 # Projectstructuur - Bedrijfsbeheer 2.0
 
-> **Laatst bijgewerkt:** `2025-04-05`
+> **Laatst bijgewerkt:** `2025-11-13`
 > **Genereerd door:** Cursor AI (refactoring guard)
 > **Doel:** Voorkom toekomstige refactoring door strikte structuur.
+> **Laatste wijzigingen:** FASE 1-3 Accounting Module foundation geïmplementeerd
 
 ---
 
@@ -25,15 +26,28 @@ src/
 │   ├── crm/
 │   └── index.ts
 │
-├── features/            # Business logic per domein
-│   └── accounting/
-│       ├── hooks/       # useQuotes, useInvoices, useQuoteForm
+├── features/            # ✅ NIEUW TOEGEVOEGD - Business logic per domein
+│   └── accounting/      # ✅ NIEUW - FASE 1-3 COMPLEET
+│       ├── hooks/       # ✅ Bestaand: useQuotes, useInvoices
+│       │   ├── useQuotes.ts
+│       │   ├── useInvoices.ts
 │       │   └── index.ts
-│       ├── services/    # quoteService, invoiceService (pure functions)
+│       ├── services/    # ✅ NIEUW - FASE 3: Pure business logic functies
+│       │   ├── quoteService.ts      # Quote CRUD, clone, convert, sync
+│       │   ├── invoiceService.ts    # Invoice CRUD, paid, overdue
+│       │   ├── transactionService.ts # Grouping, sorting, analysis
 │       │   └── index.ts
-│       ├── utils/       # calculations, formatters, validators
+│       ├── utils/       # ✅ NIEUW - FASE 2: Pure utility functies
+│       │   ├── helpers.ts           # Entity names, status colors, dates
+│       │   ├── calculations.ts      # Totals, stats, conversions
+│       │   ├── validators.ts        # Form/item/transition validatie
+│       │   ├── formatters.ts        # Currency, dates, numbers
+│       │   ├── filters.ts           # Filtering en sorting
 │       │   └── index.ts
-│       ├── types/       # accounting.types.ts
+│       ├── types/       # ✅ NIEUW - FASE 1: Helper types
+│       │   ├── accounting.types.ts  # Filter, validation, form types
+│       │   └── index.ts
+│       ├── README.md    # ✅ Module documentatie
 │       └── index.ts
 │
 ├── pages/               # Orchestratie (max 300 regels)
@@ -59,6 +73,11 @@ src/
 
 **⚠️ HUIDIGE STATUS:**
 - ✅ Frontend: Volledig geïmplementeerd
+- ✅ **Accounting Module FASE 1-3**: Foundation compleet (~2800+ lines)
+  - ✅ Types structuur (FASE 1)
+  - ✅ Utils: 5 modules met 50+ functies (FASE 2)
+  - ✅ Services: 3 modules met 30+ functies (FASE 3)
+- ⏳ **FASE 4-10**: Hooks & Components extractie (pending)
 - ❌ Backend: Nog niet geïmplementeerd (data is in-memory)
 - ❌ Database: Geen persistentie (data verloren bij refresh)
 - ❌ API: Geen REST endpoints

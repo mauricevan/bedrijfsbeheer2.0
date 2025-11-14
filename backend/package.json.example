@@ -1,0 +1,35 @@
+{
+  "name": "btd-beveiliging-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Backend API for BTD Beveiliging website",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.0.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "bcrypt": "^5.1.0",
+    "jsonwebtoken": "^9.0.0",
+    "joi": "^17.9.0",
+    "nodemailer": "^6.9.0",
+    "winston": "^3.10.0",
+    "dotenv": "^16.3.0",
+    "express-rate-limit": "^6.8.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.0.0",
+    "vitest": "^1.0.0",
+    "supertest": "^6.3.0"
+  }
+}
