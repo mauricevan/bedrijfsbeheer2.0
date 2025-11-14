@@ -6,7 +6,7 @@
 import { useMemo } from 'react';
 import type { Quote, Invoice, Transaction, Customer } from '../../../types';
 import {
-  calculateQuoteConversionRate,
+  calculateConversionRate,
   calculateAveragePaymentDays,
   calculateMonthlyRevenue,
   calculateOutstandingByCustomer,
@@ -46,7 +46,7 @@ export const useAccountingDashboard = ({
     const approvedValue = approved.reduce((sum, q) => sum + q.total, 0);
     const sentValue = sent.reduce((sum, q) => sum + q.total, 0);
 
-    const conversionRate = calculateQuoteConversionRate(quotes);
+    const conversionRate = calculateConversionRate(quotes, invoices);
 
     return {
       total: quotes.length,
@@ -60,7 +60,7 @@ export const useAccountingDashboard = ({
       sentValue,
       conversionRate,
     };
-  }, [quotes]);
+  }, [quotes, invoices]);
 
   // ============================================================================
   // INVOICE STATS
@@ -121,15 +121,27 @@ export const useAccountingDashboard = ({
   // CHART DATA
   // ============================================================================
 
-  // Monthly revenue chart data
+  // Monthly revenue chart data - convert invoices to transactions
   const monthlyRevenueData = useMemo(() => {
-    return calculateMonthlyRevenue(invoices);
+    const invoiceTransactions: Transaction[] = invoices
+      .filter(i => i.status === 'paid')
+      .map(i => ({
+        id: i.id,
+        type: 'income' as const,
+        category: 'invoices',
+        amount: i.total,
+        description: `Invoice ${i.invoiceNumber}`,
+        date: i.paidDate || i.date,
+        invoiceId: i.id,
+        createdAt: i.createdAt,
+      }));
+    return calculateMonthlyRevenue(invoiceTransactions);
   }, [invoices]);
 
   // Outstanding by customer
   const outstandingByCustomer = useMemo(() => {
-    return calculateOutstandingByCustomer(invoices, customers);
-  }, [invoices, customers]);
+    return calculateOutstandingByCustomer(invoices);
+  }, [invoices]);
 
   // Recent quotes (last 5)
   const recentQuotes = useMemo(() => {

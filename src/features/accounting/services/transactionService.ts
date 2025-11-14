@@ -90,25 +90,11 @@ export const groupTransactionsByYear = (
 // TRANSACTION SORTING
 // ============================================================================
 
-/**
- * Sort transactions by date (newest first)
- */
-export const sortTransactionsByDateDesc = (transactions: Transaction[]): Transaction[] => {
-  return [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-};
+// Note: Transaction sorting functions (sortTransactionsByDateDesc, sortTransactionsByDateAsc,
+// sortTransactionsByAmountDesc) are exported from utils/filters.ts to avoid duplicate exports
 
-/**
- * Sort transactions by date (oldest first)
- */
 export const sortTransactionsByDateAsc = (transactions: Transaction[]): Transaction[] => {
   return [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-};
-
-/**
- * Sort transactions by amount (highest first)
- */
-export const sortTransactionsByAmountDesc = (transactions: Transaction[]): Transaction[] => {
-  return [...transactions].sort((a, b) => b.amount - a.amount);
 };
 
 /**

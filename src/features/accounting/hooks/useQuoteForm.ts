@@ -19,7 +19,6 @@ const createEmptyQuoteForm = (): QuoteFormData => ({
   vatRate: 21,
   notes: '',
   validUntil: '',
-  createdBy: '',
 });
 
 export const useQuoteForm = (initialQuote?: Quote) => {
@@ -34,7 +33,6 @@ export const useQuoteForm = (initialQuote?: Quote) => {
         vatRate: initialQuote.vatRate,
         notes: initialQuote.notes || '',
         validUntil: initialQuote.validUntil,
-        createdBy: initialQuote.createdBy,
       }
     : createEmptyQuoteForm();
 
@@ -50,8 +48,8 @@ export const useQuoteForm = (initialQuote?: Quote) => {
       id: `item-${Date.now()}-${Math.random()}`,
       description: inventoryItem.name,
       quantity,
-      unitPrice: inventoryItem.price,
-      total: calculateQuoteItemTotal(quantity, inventoryItem.price),
+      unitPrice: inventoryItem.unitPrice,
+      total: calculateQuoteItemTotal(quantity, inventoryItem.unitPrice),
       inventoryItemId: inventoryItem.id,
     };
 

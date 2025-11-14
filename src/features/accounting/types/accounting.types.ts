@@ -33,6 +33,7 @@ export interface TransactionFilterOptions {
   category?: string;
   dateFrom?: string;
   dateTo?: string;
+  searchTerm?: string;
 }
 
 // ============================================================================

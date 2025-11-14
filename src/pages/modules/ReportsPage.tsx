@@ -19,8 +19,8 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({ currentUser, workOrder
   const [selectedReport, setSelectedReport] = useState<ReportType>('sales');
   const [timeframe, setTimeframe] = useState<'week' | 'month' | 'year'>('month');
 
-  const salesTotal = invoices.reduce((sum, inv) => sum + inv.items.reduce((s, i) => s + i.quantity * i.price, 0), 0);
-  const quotesTotal = quotes.reduce((sum, q) => sum + q.items.reduce((s, i) => s + i.quantity * i.price, 0), 0);
+  const salesTotal = invoices.reduce((sum, inv) => sum + inv.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0), 0);
+  const quotesTotal = quotes.reduce((sum, q) => sum + q.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0), 0);
   const completedOrders = workOrders.filter(w => w.status === 'completed').length;
   const conversionRate = quotes.length > 0 ? ((invoices.length / quotes.length) * 100).toFixed(1) : 0;
 
@@ -95,7 +95,7 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({ currentUser, workOrder
                   <div className="font-medium text-gray-900">{invoice.customerName}</div>
                   <div className="text-xs text-gray-500">{invoice.items.length} facturen</div>
                 </div>
-                <div className="text-sm font-semibold text-gray-900">€{invoice.items.reduce((s, i) => s + i.quantity * i.price, 0).toLocaleString()}</div>
+                <div className="text-sm font-semibold text-gray-900">€{invoice.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0).toLocaleString()}</div>
               </div>
             ))}
           </div>

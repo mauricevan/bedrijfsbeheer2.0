@@ -41,7 +41,7 @@ export const usePOS = (inventory: InventoryItem[], customers: Customer[]) => {
     const totalSales = sales.length;
     const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
     const todaySales = sales.filter(
-      (s) => new Date(s.saleDate).toDateString() === new Date().toDateString()
+      (s) => new Date(s.createdAt).toDateString() === new Date().toDateString()
     );
     const todayRevenue = todaySales.reduce((sum, sale) => sum + sale.total, 0);
 
@@ -183,8 +183,9 @@ export const usePOS = (inventory: InventoryItem[], customers: Customer[]) => {
         total: cartTotals.total,
         paymentMethod,
         amountPaid: amountPaid || cartTotals.total,
+        change: (amountPaid || cartTotals.total) - cartTotals.total,
+        cashierId: 'system', // TODO: Pass currentUser.id from parent component
         customerId: selectedCustomer?.id,
-        saleDate: new Date().toISOString(),
         createdAt: new Date().toISOString(),
       };
 
