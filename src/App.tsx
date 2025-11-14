@@ -16,6 +16,7 @@ import { PlanningPage } from './pages/modules/PlanningPage';
 import { ReportsPage } from './pages/modules/ReportsPage';
 import { AdminSettingsPage } from './pages/modules/AdminSettingsPage';
 import { WebshopPage } from './pages/modules/WebshopPage';
+import { NotificationsPage } from './pages/modules/NotificationsPage';
 import { useAuth } from './features/auth';
 import {
   initialUsers,
@@ -297,8 +298,15 @@ const App: React.FC = () => {
             />
           )}
 
+          {currentModule === 'notifications' && (
+            <NotificationsPage
+              currentUser={currentUser}
+              initialNotifications={notifications}
+            />
+          )}
+
           {/* Placeholder voor overige modules */}
-          {!['dashboard', 'inventory', 'workorders', 'accounting', 'crm', 'hrm', 'pos', 'planning', 'reports', 'admin'].includes(
+          {!['dashboard', 'inventory', 'workorders', 'accounting', 'crm', 'hrm', 'pos', 'planning', 'reports', 'admin', 'webshop', 'notifications'].includes(
             currentModule
           ) && (
             <div className="p-6 max-w-7xl mx-auto">

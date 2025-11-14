@@ -1,2 +1,2 @@
 // Barrel file for notifications/types
-// Export all types from this module here
+export * from './notification.types';
